@@ -5,7 +5,7 @@ This repo contains the code for cufino workspace on unitree h1_2. This code requ
 
 ## Compilation and execution
 
-1. Clone the repo (complete the command)
+1. Clone the repo
 ```sh
 git clone https://github.com/francescocufino/cufino_ws_h1_2.git
 ```
@@ -23,10 +23,16 @@ cmake ..
 make
 ```
 
+4. From the build folder, run
+```sh
+./bin/loco_arm_motion <NETWORK_INTERFACE>
+```
+where <NETWORK_INTERFACE> can be obtained though ifconfig.
+
 ## Development
 If you are on the same network of the robot, you can directly connect to it and develop from the PC2 through SSH. In this case, you can use the extension of vscode SSH.
 
-##Connection to robot PC2
+## Connection to robot PC2
 To connect to the robot PC2 through ssh you can do the following procedure:
 
 1. Ensure that the robot PC2 is turned on and the wi fi adapter is connected. Then, it automatically should connect to the Prisma Lab network.
