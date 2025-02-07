@@ -38,7 +38,7 @@ To connect to the robot PC2 through ssh you can do the following procedure:
 1. Ensure that the robot PC2 is turned on and the wi fi adapter is connected. Then, it automatically should connect to the Prisma Lab network.
 See hosts on your network
 ```sh
-sudo nmap -T4 -sP 192.168.1.0/24
+sudo nmap -T4 -sP 192.168.1.0/24 | grep -B 2 "E4:FA:C4:4C:B2:F8"
 ```
 and see the IP address assigned to the unitree robot, which has mac address E4:FA:C4:4C:B2:F8 (the corresponding IP is written before).
 

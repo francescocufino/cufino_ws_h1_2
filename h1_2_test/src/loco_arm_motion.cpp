@@ -19,9 +19,6 @@
 //#include <unitree/robot/h1/loco/h1_arm_motion.hpp>
 
 
-
-
-
 class Loco_arm_motion{
   private:
     //flags
