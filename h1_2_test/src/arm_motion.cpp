@@ -1,0 +1,234 @@
+#include "arm_motion.h"
+
+Arm_motion::Arm_motion(){
+
+  //Start low cmd publisher and subscriber
+
+  msg = std::make_shared<unitree_hg::msg::dds_::LowCmd_>();
+  state_msg = std::make_shared<unitree_hg::msg::dds_::LowState_>();
+  arm_sdk_publisher.reset(new unitree::robot::ChannelPublisher<unitree_hg::msg::dds_::LowCmd_>(kTopicArmSDK));
+  arm_sdk_publisher->InitChannel();
+  low_state_subscriber.reset(new unitree::robot::ChannelSubscriber<unitree_hg::msg::dds_::LowState_>(kTopicState));
+  low_state_subscriber->InitChannel(
+      [&](const void *msg_ptr) {
+          auto s = static_cast<const unitree_hg::msg::dds_::LowState_*>(msg_ptr);
+          *state_msg = *s;  // Dereferencing shared_ptr to copy data
+          if(!first_cb){first_cb = true;}
+
+      }, 
+      1
+  );
+}
+
+
+
+
+void Arm_motion::initialize_arms(){
+  //while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
+  //std::cout << "Press ENTER to init arms ...";
+  //std::cin.get();
+
+
+  // get current joint position
+  std::array<float, 15> current_jpos{};
+  std::cout<<"Current joint position: ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+	  current_jpos.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();
+    std::cout << "q" << i << ": " << current_jpos.at(i) << ' ';
+  }
+  std::cout << std::endl;
+
+  // set init pos
+  std::cout << "Initailizing arms ...";
+  float init_time = 2.0f;
+  int init_time_steps = static_cast<int>(init_time / control_dt);
+
+  for (int i = 0; i < init_time_steps; ++i) {
+    // set weight
+    weight = 1.0;
+    msg->motor_cmd().at(JointIndex::kNotUsedJoint).q(weight);
+    float phase = 1.0 * i / init_time_steps;
+    //std::cout << "Phase: " << phase << std::endl;
+
+    // set control joints
+    for (int j = 0; j < init_pos.size(); ++j) {
+      q_cmd.at(j) = init_pos.at(j) * phase + current_jpos.at(j) * (1 - phase);
+      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+    }
+
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+
+    // sleep
+    std::this_thread::sleep_for(sleep_time);
+  }
+  arm_initialized = true;
+  std::cout<<"Reached joint position q: ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+  }
+  std::cout << std::endl << std::endl;
+}
+
+  
+void Arm_motion::move_arms_integral(std::array<float, 15> target_pos){
+  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+
+  //std::cout << "Press ENTER to start arm ctrl ..." << std::endl;
+  //std::cin.get();
+
+  // start control
+  std::cout << "Start arm ctrl!" << std::endl;
+  float period = 5.f;
+  int num_time_steps = static_cast<int>(period / control_dt);
+
+
+  // lift arms up
+  for (int i = 0; i < num_time_steps; ++i) {
+    // update jpos des
+    for (int j = 0; j < target_pos.size(); ++j) {
+      q_cmd.at(j) +=
+          std::clamp(target_pos.at(j) - q_cmd.at(j),
+                     -max_joint_delta, max_joint_delta);
+    }
+
+    // set control joints
+    for (int j = 0; j < target_pos.size(); ++j) {
+      //std::cout << "q" << j << ": " << current_jpos_des.at(j) << ' ';
+      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+    }
+    //std::cout << std::endl;
+
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+
+    // sleep
+    std::this_thread::sleep_for(sleep_time);
+  }
+}
+
+void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
+  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+
+  //Initial time
+  float t = 0;
+
+  //Initial configuration q_i
+  std::array<float, 15> q_i{};
+  std::cout<<"Current joint position q: ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+  }
+  std::cout << std::endl << std::endl;
+
+  std::cout<<"Planning from initial joint position q_i (last commanded one): ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+	  q_i.at(i) = q_cmd.at(i);
+    std::cout << "q_i" << i << ": " << q_i.at(i) << ' ';
+  }
+  std::cout << std::endl << std::endl;
+
+  std::cout<<"Desired target joint position q_f: ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+    std::cout << "q_f" << i << ": " << q_f.at(i) << ' ';
+  }
+  std::cout << std::endl << std::endl;
+
+  //Planning parameters
+  std::array<float, 15> a0{}, a1{}, a2{}, a3{}, a4{}, a5{};
+  for (int j = 0; j < q_f.size(); ++j) {
+    a0.at(j) = q_i.at(j);
+    a1.at(j) = 0;
+    a2.at(j) = 0;
+    a3.at(j) = (10*q_f.at(j) - 10*q_i.at(j))/pow(t_f, 3);
+    a4.at(j) = (-15*q_f.at(j) + 15*q_i.at(j))/pow(t_f, 4);
+    a5.at(j) = (6*q_f.at(j) - 6*q_i.at(j))/pow(t_f, 5);
+  }
+
+  //std::cout << "Press ENTER to start arm ctrl poly..." << std::endl;
+  //std::cin.get();
+
+  // start control
+  //std::cout << "Start arm ctrl poly!" << std::endl;
+
+  //Planning over the time interval [0, t_f]
+  while(t<=t_f){
+
+    //Commanding joints
+    for (int j = 0; j < q_cmd.size(); ++j) {
+      q_cmd.at(j) =a5.at(j)*pow(t,5) + a4.at(j)*pow(t,4) + a3.at(j)*pow(t,3) + a2.at(j)*pow(t,2)+ a1.at(j)*t + a0.at(j);
+      //std::cout << "q" << j << ": " << q_cmd.at(j) << ' ';
+      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+    }
+    //std::cout << std::endl;
+
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+
+    // sleep
+    std::this_thread::sleep_for(sleep_time);
+
+    t = t + control_dt;
+  }
+
+  std::cout<<"Reached joint position q: ";
+  std::cout << std::endl;
+  for (int i = 0; i < arm_joints.size(); ++i) {
+    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+  }
+  std::cout << std::endl << std::endl;
+  
+
+}
+
+
+void Arm_motion::stop_arms(){
+  std::cout << "Stopping arm ctrl: returning to initial position ...\n";
+  move_arms_polynomial(init_pos, 2);
+  std::cout << "Stopping arm ctrl ...\n";
+  float stop_time = 2.0f;
+  int stop_time_steps = static_cast<int>(stop_time / control_dt);
+
+  for (int i = 0; i < stop_time_steps; ++i) {
+    // increase weight
+    weight -= delta_weight;
+    weight = std::clamp(weight, 0.f, 1.f);
+
+    // set weight
+    msg->motor_cmd().at(JointIndex::kNotUsedJoint).q(weight);
+
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+
+    // sleep
+    std::this_thread::sleep_for(sleep_time);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
