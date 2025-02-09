@@ -1,6 +1,10 @@
 <!-- GETTING STARTED -->
 ## Overview
-This repo contains the code for cufino workspace on unitree h1_2. This code requires that unitree_sdk2 is installed.
+This repo contains the code for cufino workspace on unitree h1_2. In the folder h1_2_test, a modular sw has been implemented to use the functionalities of high level locomotion, arm motion and hand motion in one single very simple script whole_body_motion.cpp.
+ 
+
+## Dependencies
+unitree_sdk2, boost, spdlog are required.
 
 
 ## Compilation and execution
@@ -22,15 +26,28 @@ cd build
 cmake ..
 make
 ```
-
 4. From the build folder, run
 ```sh
-./bin/loco_arm_motion <NETWORK_INTERFACE>
+sudo ./bin/hand_service -s /dev/ttyUSB0
+```
+
+5. Open another terminal and from the build folder, run
+```sh
+./bin/whole_body_motion <NETWORK_INTERFACE>
 ```
 where <NETWORK_INTERFACE> can be obtained though ifconfig.
 
 ## Development
 If you are on the same network of the robot, you can directly connect to it and develop from the PC2 through SSH. In this case, you can use the extension of vscode SSH.
+
+## Documentation
+To visualize the documentation, install doxygen and generate the html
+```sh
+sudo apt install doxygen
+cd <YOUR_PATH_TO_REPO>
+doxygen Doxyfile
+xdg-open html/index.html
+```
 
 ## Connection to robot PC2
 To connect to the robot PC2 through ssh you can do the following procedure:

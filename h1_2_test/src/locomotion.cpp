@@ -1,3 +1,13 @@
+/**
+ * @file locomotion.cpp
+ * @brief This contains the implementation of functions for basic high level locomotion.
+ * 
+ * @author Francesco Cufino
+ * @date 09/02/2024
+ * @version 1.0
+ */
+
+
 #include "locomotion.h"
 
 Locomotion::Locomotion(){

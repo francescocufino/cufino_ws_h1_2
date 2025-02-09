@@ -12,8 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 
-find_package(unitree_sdk2 REQUIRED)
-
 if (BUILD_H1_2_TEST)
     add_subdirectory(h1_2_test)
 endif ()

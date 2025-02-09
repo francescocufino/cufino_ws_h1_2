@@ -1,3 +1,12 @@
+/**
+ * @file arm_motion.cpp
+ * @brief This contains the implementation of functions for basic arm motion.
+ * 
+ * @author Francesco Cufino
+ * @date 09/02/2024
+ * @version 1.0
+ */
+
 #include "arm_motion.h"
 
 Arm_motion::Arm_motion(){
@@ -24,7 +33,7 @@ Arm_motion::Arm_motion(){
 
 
 void Arm_motion::initialize_arms(){
-  //while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
+  while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
   //std::cout << "Press ENTER to init arms ...";
   //std::cin.get();
 
@@ -77,7 +86,7 @@ void Arm_motion::initialize_arms(){
 }
 
   
-void Arm_motion::move_arms_integral(std::array<float, 15> target_pos){
+void Arm_motion::move_arms_integral(std::array<float, 15> q_f, float t_f){
   if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
 
   //std::cout << "Press ENTER to start arm ctrl ..." << std::endl;
@@ -85,21 +94,18 @@ void Arm_motion::move_arms_integral(std::array<float, 15> target_pos){
 
   // start control
   std::cout << "Start arm ctrl!" << std::endl;
-  float period = 5.f;
-  int num_time_steps = static_cast<int>(period / control_dt);
+  int num_time_steps = static_cast<int>(t_f / control_dt);
 
-
-  // lift arms up
   for (int i = 0; i < num_time_steps; ++i) {
     // update jpos des
-    for (int j = 0; j < target_pos.size(); ++j) {
+    for (int j = 0; j < q_f.size(); ++j) {
       q_cmd.at(j) +=
-          std::clamp(target_pos.at(j) - q_cmd.at(j),
+          std::clamp(q_f.at(j) - q_cmd.at(j),
                      -max_joint_delta, max_joint_delta);
     }
 
     // set control joints
-    for (int j = 0; j < target_pos.size(); ++j) {
+    for (int j = 0; j < q_f.size(); ++j) {
       //std::cout << "q" << j << ": " << current_jpos_des.at(j) << ' ';
       msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
@@ -198,7 +204,6 @@ void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
 
 }
 
-
 void Arm_motion::stop_arms(){
   std::cout << "Stopping arm ctrl: returning to initial position ...\n";
   move_arms_polynomial(init_pos, 2);
@@ -221,6 +226,15 @@ void Arm_motion::stop_arms(){
     std::this_thread::sleep_for(sleep_time);
   }
 }
+
+std::array<float, 15> Arm_motion::get_angles(){
+  std::array<float, 15> q{};
+  for (int i = 0; i < q.size(); ++i) {
+	  q.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();
+  }
+  return q;
+}
+
 
 
 

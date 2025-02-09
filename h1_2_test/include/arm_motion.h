@@ -1,3 +1,14 @@
+/**
+ * @file arm_motion.h
+ * @brief Provides functions and classes for basic arm motion.
+ * 
+ * This header file contains the declaration of functions and classes 
+ * that perform basic arm motion, like set target joint position with a specified duration. 
+ * 
+ * @author Francesco Cufino
+ * @date 09/02/2024
+ * @version 1.0
+ */
 #ifndef _ARM_MOTION_
 #define _ARM_MOTION_
 
@@ -14,7 +25,10 @@
 #include <unitree/idl/hg/LowState_.hpp>
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
-
+/**
+ * @class Arm_motion
+ * @brief A class for basic arm motion.
+ */ 
 class Arm_motion{
   private:
       enum JointIndex {
@@ -118,10 +132,46 @@ class Arm_motion{
 
   public:
     Arm_motion();
+    /**
+     * @brief Initialize the arms bringing them to a specific initial configuration
+     */
     void initialize_arms();
-    void move_arms_integral(std::array<float, 15>);
-    void move_arms_polynomial(std::array<float, 15>, float);
+    /**
+     * @brief Move the arms to the specified joint angles with an integral planner
+     * 
+     * @param q_f Target configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw
+     * @param t_f duration
+     */
+    void move_arms_integral(std::array<float, 15> q_f, float t_f);
+    /**
+     * @brief Move the arms to the specified joint angles with a 5-th order polynomial planner
+     * 
+     * @param q_f Target configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw
+     * @param t_f duration
+     */
+    void move_arms_polynomial(std::array<float, 15> q_f, float t_f);
+    /**
+     * @brief Stop the arms bringing them to the specific initial configuration
+     */
     void stop_arms();
+        /**
+     * @brief Get the arms angles
+     * 
+     * Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw
+     */
+    std::array<float, 15> get_angles();
   };
 
   #endif

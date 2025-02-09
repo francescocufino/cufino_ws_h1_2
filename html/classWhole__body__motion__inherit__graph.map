@@ -1,0 +1,6 @@
+<map id="Whole_body_motion" name="Whole_body_motion">
+<area shape="rect" id="node1" title="A class for locomotion, arm motion, hand motion usage." alt="" coords="103,80,257,107"/>
+<area shape="rect" id="node2" href="$classLocomotion.html" title="A class for basic high level locomotion." alt="" coords="5,5,104,32"/>
+<area shape="rect" id="node3" href="$classArm__motion.html" title="A class for basic arm motion." alt="" coords="129,5,231,32"/>
+<area shape="rect" id="node4" href="$classHand__motion.html" title="A class for basic inspire hands motion." alt="" coords="256,5,365,32"/>
+</map>
