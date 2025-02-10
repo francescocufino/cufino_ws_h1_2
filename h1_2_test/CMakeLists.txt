@@ -1,9 +1,8 @@
 find_package(unitree_sdk2 REQUIRED)
-find_package(Boost COMPONENTS program_options REQUIRED)
-
+find_package(Boost COMPONENTS program_options thread system REQUIRED)
 
 add_executable(whole_body_motion src/whole_body_motion.cpp src/locomotion.cpp src/arm_motion.cpp src/hand_motion.cpp)
-target_link_libraries(whole_body_motion unitree_sdk2)
+target_link_libraries(whole_body_motion unitree_sdk2 Boost::thread Boost::system)
 target_include_directories(whole_body_motion PRIVATE include)
 
 

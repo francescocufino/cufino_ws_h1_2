@@ -10,6 +10,8 @@
 #include <thread>
 #include <cmath>
 #include <memory>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
 
 //high level (for locomotion, arm motion, hand motion)
 #include "locomotion.h"
@@ -25,11 +27,49 @@ class Whole_body_motion : public Locomotion, public Arm_motion, public Hand_moti
 
   public:
     Whole_body_motion();
+    void wave_arm();
+    void wave_hand();
+    void wave_arm_hand();
   };
 
 Whole_body_motion::Whole_body_motion(){
 
 }
+
+void Whole_body_motion::wave_arm(){
+  std::array<float, 15> wave_1_pos = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
+                                    0.f, -M_PI_2, 0.f, M_PI_2, 0, 0, 0,
+                                    0.f};
+  std::array<float, 15> wave_2_pos = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
+                                    0.f, -M_PI_2, 0.f, M_PI_2, 0, 0, 0,
+                                    0.f};
+  initialize_arms();
+  while(1){
+    move_arms_polynomial(wave_1_pos, 5);
+    move_arms_polynomial(wave_2_pos, 5);
+  }                                  
+
+}
+
+void Whole_body_motion::wave_hand(){
+  std::array<float, 12> wave_closed_pos; wave_closed_pos.fill(0);
+  std::array<float, 12> wave_opened_pos; wave_opened_pos.fill(1);
+  initialize_arms();
+  while(1){
+    move_hands(wave_closed_pos);
+    move_hands(wave_opened_pos);
+  }                                  
+
+}
+
+void Whole_body_motion::wave_arm_hand(){
+  boost::thread* thread1 = new boost::thread(boost::bind(&Whole_body_motion::wave_arm, this));
+  //boost::thread thread2(boost::bind(&Whole_body_motion::wave_arm, this));
+  // Wait for both threads to finish
+  thread1->join();
+  //thread2.join();
+}
+
 
 
 int main(int argc, char const *argv[]) {
@@ -46,7 +86,7 @@ int main(int argc, char const *argv[]) {
                                     0.f};
 
   std::array<float, 12> target_pos_hands_closed; target_pos_hands_closed.fill(0);
-  std::array<float, 12> target_pos_hands_opened; target_pos_hands_closed.fill(1);
+  std::array<float, 12> target_pos_hands_opened; target_pos_hands_opened.fill(1);
 
   Whole_body_motion h1_wbm;
 
