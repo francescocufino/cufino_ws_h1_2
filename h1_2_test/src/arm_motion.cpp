@@ -40,13 +40,13 @@ void Arm_motion::initialize_arms(){
 
   // get current joint position
   std::array<float, 15> current_jpos{};
-  std::cout<<"Current joint position: ";
-  std::cout << std::endl;
+  //std::cout<<"Current joint position: ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
 	  current_jpos.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();
-    std::cout << "q" << i << ": " << current_jpos.at(i) << ' ';
+    //std::cout << "q" << i << ": " << current_jpos.at(i) << ' ';
   }
-  std::cout << std::endl;
+  //std::cout << std::endl;
 
   // set init pos
   std::cout << "Initailizing arms ...";
@@ -77,12 +77,12 @@ void Arm_motion::initialize_arms(){
     std::this_thread::sleep_for(sleep_time);
   }
   arm_initialized = true;
-  std::cout<<"Reached joint position q: ";
-  std::cout << std::endl;
+  //std::cout<<"Reached joint position q: ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
-    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
   }
-  std::cout << std::endl << std::endl;
+  //std::cout << std::endl << std::endl;
 }
 
   
@@ -93,7 +93,7 @@ void Arm_motion::move_arms_integral(std::array<float, 15> q_f, float t_f){
   //std::cin.get();
 
   // start control
-  std::cout << "Start arm ctrl!" << std::endl;
+  //std::cout << "Start arm ctrl!" << std::endl;
   int num_time_steps = static_cast<int>(t_f / control_dt);
 
   for (int i = 0; i < num_time_steps; ++i) {
@@ -131,27 +131,27 @@ void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
 
   //Initial configuration q_i
   std::array<float, 15> q_i{};
-  std::cout<<"Current joint position q: ";
-  std::cout << std::endl;
+  //std::cout<<"Current joint position q: ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
-    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
   }
-  std::cout << std::endl << std::endl;
+  //std::cout << std::endl << std::endl;
 
-  std::cout<<"Planning from initial joint position q_i (last commanded one): ";
-  std::cout << std::endl;
+  //std::cout<<"Planning from initial joint position q_i (last commanded one): ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
 	  q_i.at(i) = q_cmd.at(i);
-    std::cout << "q_i" << i << ": " << q_i.at(i) << ' ';
+    //std::cout << "q_i" << i << ": " << q_i.at(i) << ' ';
   }
-  std::cout << std::endl << std::endl;
+  //std::cout << std::endl << std::endl;
 
-  std::cout<<"Desired target joint position q_f: ";
-  std::cout << std::endl;
+  //std::cout<<"Desired target joint position q_f: ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
-    std::cout << "q_f" << i << ": " << q_f.at(i) << ' ';
+    //std::cout << "q_f" << i << ": " << q_f.at(i) << ' ';
   }
-  std::cout << std::endl << std::endl;
+  //std::cout << std::endl << std::endl;
 
   //Planning parameters
   std::array<float, 15> a0{}, a1{}, a2{}, a3{}, a4{}, a5{};
@@ -194,12 +194,12 @@ void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
     t = t + control_dt;
   }
 
-  std::cout<<"Reached joint position q: ";
-  std::cout << std::endl;
+  //std::cout<<"Reached joint position q: ";
+  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
-    std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
   }
-  std::cout << std::endl << std::endl;
+  //std::cout << std::endl << std::endl;
   
 
 }
@@ -228,6 +228,7 @@ void Arm_motion::stop_arms(){
 }
 
 std::array<float, 15> Arm_motion::get_angles(){
+  while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
   std::array<float, 15> q{};
   for (int i = 0; i < q.size(); ++i) {
 	  q.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();

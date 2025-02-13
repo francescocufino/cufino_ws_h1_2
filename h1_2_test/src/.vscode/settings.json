@@ -68,6 +68,9 @@
         "ranges": "cpp",
         "stop_token": "cpp",
         "cfenv": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "csignal": "cpp",
+        "codecvt": "cpp",
+        "future": "cpp"
     }
 }

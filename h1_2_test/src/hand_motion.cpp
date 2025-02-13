@@ -18,7 +18,7 @@ void Hand_motion::move_hands(std::array<float, 12>& angles){
         cmd.cmds()[i].q() = angles.at(i);
     }
     handcmd->Write(cmd);
-    usleep(100000);
+    usleep(1000000);
 
 }
 
