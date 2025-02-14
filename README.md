@@ -30,12 +30,20 @@ make
 ```sh
 sudo ./bin/hand_service -s /dev/ttyUSB0
 ```
+If it doesn't work, run 
+```sh
+sudo ./bin/hand_service -s /dev/ttyUSB1
+```
+or
+```sh
+sudo ./bin/hand_service -s /dev/ttyUSB2
+```
 
 5. Open another terminal and from the build folder, run
 ```sh
-./bin/whole_body_motion <NETWORK_INTERFACE>
+./bin/whole_body_motion eth0
 ```
-where <NETWORK_INTERFACE> can be obtained though ifconfig.
+If it doesn't work, see the network interface through ifconfig and substitute it in place of eth0.
 
 ## Development
 If you are on the same network of the robot, you can directly connect to it and develop from the PC2 through SSH. In this case, you can use the extension of vscode SSH.

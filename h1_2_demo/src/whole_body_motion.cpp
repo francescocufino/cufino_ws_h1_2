@@ -163,7 +163,7 @@ int main(int argc, char const *argv[]) {
   //  }
 
   //DEMO ROUTINES
-  std::ifstream file("../h1_2_test/config/routine.txt");
+  std::ifstream file("../h1_2_demo/config/routine.txt");
   std::string command;
   if(!file){std::cerr<<"Error opening file\n"; return 1;}
   file >>command;
