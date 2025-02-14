@@ -172,6 +172,17 @@ class Arm_motion{
      * WaistYaw
      */
     std::array<float, 15> get_angles();
+            /**
+     * @brief Get estimated arms torques
+     * 
+     * Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw
+     */
+    std::array<float, 15> get_est_torques();
+
   };
 
   #endif

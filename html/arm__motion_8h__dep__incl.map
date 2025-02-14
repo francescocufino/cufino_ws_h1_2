@@ -1,5 +1,5 @@
-<map id="h1_2_test/include/arm_motion.h" name="h1_2_test/include/arm_motion.h">
-<area shape="rect" id="node1" title="Provides functions and classes for basic arm motion." alt="" coords="135,5,302,47"/>
-<area shape="rect" id="node2" href="$arm__motion_8cpp.html" title="This contains the implementation of functions for basic arm motion." alt="" coords="5,102,224,129"/>
-<area shape="rect" id="node3" href="$whole__body__motion_8cpp.html" title="This contains the user script for whole body motion." alt="" coords="249,95,399,136"/>
+<map id="include/arm_motion.h" name="include/arm_motion.h">
+<area shape="rect" id="node1" title="Provides functions and classes for basic arm motion." alt="" coords="97,5,261,32"/>
+<area shape="rect" id="node2" href="$whole__body__motion_8cpp.html" title="This contains the user script for whole body motion." alt="" coords="5,80,168,121"/>
+<area shape="rect" id="node3" href="$arm__motion_8cpp.html" title="This contains the implementation of functions for basic arm motion." alt="" coords="193,80,351,121"/>
 </map>

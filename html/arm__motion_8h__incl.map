@@ -1,13 +1,13 @@
-<map id="h1_2_test/include/arm_motion.h" name="h1_2_test/include/arm_motion.h">
-<area shape="rect" id="node1" title="Provides functions and classes for basic arm motion." alt="" coords="363,5,530,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,102,61,129"/>
-<area shape="rect" id="node3" title=" " alt="" coords="85,102,149,129"/>
-<area shape="rect" id="node4" title=" " alt="" coords="173,102,240,129"/>
-<area shape="rect" id="node5" title=" " alt="" coords="264,102,344,129"/>
-<area shape="rect" id="node6" title=" " alt="" coords="369,102,431,129"/>
-<area shape="rect" id="node7" title=" " alt="" coords="456,102,533,129"/>
-<area shape="rect" id="node8" title=" " alt="" coords="557,102,760,129"/>
-<area shape="rect" id="node9" title=" " alt="" coords="785,102,991,129"/>
-<area shape="rect" id="node10" title=" " alt="" coords="1015,95,1187,136"/>
-<area shape="rect" id="node11" title=" " alt="" coords="1212,95,1391,136"/>
+<map id="include/arm_motion.h" name="include/arm_motion.h">
+<area shape="rect" id="node1" title="Provides functions and classes for basic arm motion." alt="" coords="365,5,529,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,87,61,114"/>
+<area shape="rect" id="node3" title=" " alt="" coords="85,87,149,114"/>
+<area shape="rect" id="node4" title=" " alt="" coords="173,87,240,114"/>
+<area shape="rect" id="node5" title=" " alt="" coords="264,87,344,114"/>
+<area shape="rect" id="node6" title=" " alt="" coords="369,87,431,114"/>
+<area shape="rect" id="node7" title=" " alt="" coords="456,87,533,114"/>
+<area shape="rect" id="node8" title=" " alt="" coords="557,87,760,114"/>
+<area shape="rect" id="node9" title=" " alt="" coords="785,87,991,114"/>
+<area shape="rect" id="node10" title=" " alt="" coords="1015,80,1187,121"/>
+<area shape="rect" id="node11" title=" " alt="" coords="1212,80,1391,121"/>
 </map>

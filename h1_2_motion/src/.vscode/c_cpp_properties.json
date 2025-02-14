@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "/usr/local/include/unitree",
                 "/usr/local/include/ddscxx",
-                "${workspaceFolder}/../include"
+                "${workspaceFolder}/../../include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

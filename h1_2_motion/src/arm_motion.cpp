@@ -236,6 +236,16 @@ std::array<float, 15> Arm_motion::get_angles(){
   return q;
 }
 
+std::array<float, 15> Arm_motion::get_est_torques(){
+  while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
+  std::array<float, 15> tau_est{};
+  for (int i = 0; i < tau_est.size(); ++i) {
+	  tau_est.at(i) = state_msg->motor_state().at(arm_joints.at(i)).tau_est();
+  }
+  return tau_est;
+}
+
+
 
 
 

@@ -140,21 +140,23 @@ int main(int argc, char const *argv[]) {
   Whole_body_motion h1_wbm;
 
   //WHOLE BODY MOTION TEST
-  //std::array<float, 15> target_pos_arms_lateral_lift = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
+  // std::array<float, 15> target_pos_arms_lateral_lift = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
   //                                  0.f, -M_PI_2, 0.f, M_PI_2, 0, 0, 0,
   //                                  0.f};
 
-  //std::array<float, 15> target_pos_arms_forward = {-M_PI/(12.f), 0.3,  0.f, M_PI/(12.f), 0, 0, 0,
+  // std::array<float, 15> target_pos_arms_forward = {-M_PI/(12.f), 0.3,  0.f, M_PI/(12.f), 0, 0, 0,
   //                                  -M_PI/(12.f), -0.3, 0.f, M_PI/(12.f), 0, 0, 0,
   //                                  0.f};
 
-  //std::array<float, 12> target_pos_hands_closed; target_pos_hands_closed.fill(0);
-  //std::array<float, 12> target_pos_hands_opened; target_pos_hands_opened.fill(1);
-  //h1_wbm.initialize_arms();
-  //h1_wbm.walk(0.1, 0, 0);
-  //h1_wbm.move_arms_polynomial(target_pos_arms_lateral_lift, 3);
-  //h1_wbm.stop_walk();
-  //h1_wbm.stop_arms();
+  // std::array<float, 12> target_pos_hands_closed; target_pos_hands_closed.fill(0);
+  // std::array<float, 12> target_pos_hands_opened; target_pos_hands_opened.fill(1);
+  // h1_wbm.initialize_arms();
+  // h1_wbm.walk(0.1, 0, 0);
+  // h1_wbm.move_arms_polynomial(target_pos_arms_lateral_lift, 3);
+  // h1_wbm.stop_walk();
+  // h1_wbm.stop_arms();
+
+
 
   //PRINT INIT POS
   //std::array<float, 15> q; q=h1_wbm.Arm_motion::get_angles();
@@ -162,23 +164,35 @@ int main(int argc, char const *argv[]) {
   //    //std::cout << "q" << j << ": " << q.at(j) << ' ';
   //  }
 
-  //DEMO ROUTINES
-  std::ifstream file("../h1_2_demo/config/routine.txt");
-  std::string command;
-  if(!file){std::cerr<<"Error opening file\n"; return 1;}
-  file >>command;
 
-  if(command == "shake"){
-    h1_wbm.shake_hand();
-  }
-  else if(command == "wave"){
-    h1_wbm.wave_arm_hand();
-  }
-  else if(command == "fist_bump"){
-    h1_wbm.fist_bump();
-  }
-  else{
-    h1_wbm.wave_arm_hand();
+  //DEMO ROUTINES
+  // std::ifstream file("../h1_2_demo/config/routine.txt");
+  // std::string command;
+  // if(!file){std::cerr<<"Error opening file\n"; return 1;}
+  // file >>command;
+
+  // if(command == "shake"){
+  //   h1_wbm.shake_hand();
+  // }
+  // else if(command == "wave"){
+  //   h1_wbm.wave_arm_hand();
+  // }
+  // else if(command == "fist_bump"){
+  //   h1_wbm.fist_bump();
+  // }
+  // else{
+  //   h1_wbm.wave_arm_hand();
+  // }
+
+  //PRINT IN LOOP EST TORQUES
+  std::array<float, 15> tau_est;
+  while(1){
+    tau_est = h1_wbm.get_est_torques();
+    for (int j = 0; j < tau_est.size(); ++j) {
+     std::cout << "tau" << j << ": " << tau_est.at(j) << ' ';
+   }
+   std::cout << std::endl << std::endl;
+
   }
 
 }
