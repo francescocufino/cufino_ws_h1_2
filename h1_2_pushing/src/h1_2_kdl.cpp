@@ -27,6 +27,10 @@ bool H1_2_kdl::init_robot_model(){
 	//Resize eigen MatrixXd
   _jacobian_l.resize(_k_chain_l.getNrOfJoints());
   _jacobian_r.resize(_k_chain_r.getNrOfJoints());
+  _tau_est_r.resize(7);
+  _tau_est_l.resize(7);
+  _f_est_l.resize(6);
+  _f_est_r.resize(6);
 
   //Allocate jacobian solver and jntarray
   _jacobian_l_solver=std::make_shared<KDL::ChainJntToJacSolver>(_k_chain_l);
@@ -38,43 +42,42 @@ bool H1_2_kdl::init_robot_model(){
 
 }
 
-Eigen::VectorXd H1_2_kdl::compute_left_ee_force(Eigen::VectorXd q, Eigen::VectorXd tau){
-    //update joint position
-    if(q.size()!=_q_l->rows() || tau.size()!=_q_l->rows()){std::cerr<<"Wrong dimension\n";}
-    _q_l->data = q;
-
-    // Compute Jacobian at the given joint configuration
-    if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
-        std::cerr << "Failed to compute Jacobian!" << std::endl;
-        return Eigen::VectorXd::Zero(6);
+void H1_2_kdl::update_state(std::array<float, 15> q, std::array<float, 15> tau_est){
+  //Update joints and torques
+  for(int i=0; i<14; i++){
+    if(i<=6){
+      _q_l->data[i] = q.at(i);
+      _tau_est_l(i) = tau_est.at(i);
     }
-
-    // Convert Jacobian to Eigen format
+    else{
+      _q_r->data[i-7] = q.at(i);
+      _tau_est_r(i-7) = tau_est.at(i);
+    }
+  }
+  //Update Jacobians
+    if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
+        std::cerr << "Failed to compute left arm Jacobian!" << std::endl;
+        exit(1);
+    }
     _jacobian_l_eigen = _jacobian_l.data;
 
-    // Compute End-Effector Force using the Transpose Method
-    return r_pinv(_jacobian_l_eigen.transpose()) * tau;
-
-}
-
-Eigen::VectorXd H1_2_kdl::compute_right_ee_force(Eigen::VectorXd q, Eigen::VectorXd tau){
-    //update joint position
-    if(q.size()!=_q_r->rows() || tau.size()!=_q_r->rows()){std::cerr<<"Wrong dimension\n";}
-    _q_r->data = q;
-
-    // Compute Jacobian at the given joint configuration
     if (_jacobian_r_solver->JntToJac(*_q_r, _jacobian_r) < 0) {
-        std::cerr << "Failed to compute Jacobian!" << std::endl;
-        return Eigen::VectorXd::Zero(6);
+        std::cerr << "Failed to compute right arm Jacobian!" << std::endl;
+        exit(1);
     }
-
-    // Convert Jacobian to Eigen format
     _jacobian_r_eigen = _jacobian_r.data;
-
-    // Compute End-Effector Force using the Transpose Method
-    return r_pinv(_jacobian_r_eigen.transpose()) * tau;
-
 }
+
+std::array<float, 12> H1_2_kdl::compute_ee_forces(std::array<float, 15> q, std::array<float, 15> tau_est){
+  update_state(q, tau_est);
+  _f_est_l = r_pinv(_jacobian_l_eigen.transpose()) * _tau_est_l;
+  _f_est_r = r_pinv(_jacobian_r_eigen.transpose()) * _tau_est_r;
+  std::array<float, 12> f_ee;
+  std::copy(_f_est_l.data(), _f_est_l.data() + 6, f_ee.begin());      
+  std::copy(_f_est_r.data(), _f_est_r.data() + 6, f_ee.begin() + 6);  
+  return f_ee;
+}
+
 
 Eigen::MatrixXd H1_2_kdl::r_pinv(Eigen::MatrixXd A){
   return A.transpose() * (A * A.transpose()).inverse(); 

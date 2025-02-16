@@ -36,21 +36,22 @@ class H1_2_kdl{
     std::shared_ptr<KDL::JntArray>_q_r; //Right arm joint position
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_r_solver; //Right Jacobian solver
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_l_solver; //Left Jacobian solver
-
-    //Eigen
     Eigen::MatrixXd _jacobian_l_eigen;
     Eigen::MatrixXd _jacobian_r_eigen;
-
+    Eigen::VectorXd _tau_est_l;
+    Eigen::VectorXd _tau_est_r;
+    Eigen::VectorXd _f_est_l;
+    Eigen::VectorXd _f_est_r;
     Eigen::MatrixXd r_pinv(Eigen::MatrixXd); //Right pseudoinverse
+
+    void update_state(std::array<float, 15> q, std::array<float, 15> tau_est);
+
 
 
   public:
     H1_2_kdl();
     bool init_robot_model();
-    Eigen::VectorXd compute_left_ee_force(Eigen::VectorXd q, Eigen::VectorXd tau);
-    Eigen::VectorXd compute_right_ee_force(Eigen::VectorXd q, Eigen::VectorXd tau);
-
-
+    std::array<float, 12> compute_ee_forces(std::array<float, 15> q, std::array<float, 15> tau_est);
   };
 
 
