@@ -54,6 +54,7 @@ void H1_2_kdl::update_state(std::array<float, 15> q, std::array<float, 15> tau_e
       _tau_est_r(i-7) = tau_est.at(i);
     }
   }
+
   //Update Jacobians
     if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
         std::cerr << "Failed to compute left arm Jacobian!" << std::endl;

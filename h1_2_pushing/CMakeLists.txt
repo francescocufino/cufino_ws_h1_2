@@ -4,6 +4,8 @@ find_package(orocos_kdl REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+
+
 set(H1_2_MOTION_PATH ./../h1_2_motion)
 
 add_executable(pushing_wheelchair src/pushing_wheelchair.cpp src/h1_2_kdl.cpp ${H1_2_MOTION_PATH}/src/locomotion.cpp ${H1_2_MOTION_PATH}/src/arm_motion.cpp ${H1_2_MOTION_PATH}/src/hand_motion.cpp)
