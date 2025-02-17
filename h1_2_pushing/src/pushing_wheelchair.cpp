@@ -105,6 +105,10 @@ int main(int argc, char const *argv[]) {
     unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
     Pushing h1_pushing;
     h1_pushing.initialize_arms();
+    std::array<float, 15> q; q=h1_pushing.Arm_motion::get_angles();
+    for (int j = 0; j < q.size(); ++j) {
+      std::cout << q.at(j) << ", ";
+    }
 
     while (true){
        f_est = h1_pushing.get_est_forces();

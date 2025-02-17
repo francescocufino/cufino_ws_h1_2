@@ -1,3 +1,4 @@
+list(INSERT CMAKE_PREFIX_PATH 0 "/usr")
 find_package(unitree_sdk2 REQUIRED)
 find_package(Boost COMPONENTS program_options thread system REQUIRED)
 find_package(orocos_kdl REQUIRED)
