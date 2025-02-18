@@ -27,6 +27,18 @@ Arm_motion::Arm_motion(){
       }, 
       1
   );
+
+  //GO2
+  low_state_subscriber_go2.reset(new unitree::robot::ChannelSubscriber<unitree_go::msg::dds_::LowState_>(kTopicState));
+  low_state_subscriber_go2->InitChannel(
+      [&](const void *msg_ptr) {
+          auto s = static_cast<const unitree_go::msg::dds_::LowState_*>(msg_ptr);
+          *state_msg_go2 = *s;  // Dereferencing shared_ptr to copy data
+          if(!first_cb_go2){first_cb_go2 = true;}
+
+      }, 
+      1
+  );
   //Set gains in command msg
   for (int j = 0; j < arm_joints.size(); ++j) {
   msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
@@ -243,6 +255,15 @@ std::array<float, 15> Arm_motion::get_est_torques(){
   }
   return tau_est;
 }
+
+void Arm_motion::print_foot_force(){
+  while(!first_cb_go2) {std::this_thread::sleep_for(sleep_time);}
+  std::array<float, 15> tau_est{};
+  for (int i = 0; i < tau_est.size(); ++i) {
+    std::cout << "foot force:" << state_msg_go2->foot_force()[0] << "\n";
+  }
+}
+
 
 
 
