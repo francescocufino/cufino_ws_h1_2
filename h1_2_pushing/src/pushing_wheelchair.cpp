@@ -155,7 +155,6 @@ int main(int argc, char const *argv[]) {
 
   //TEST FORCE ESTIMATION
   //h1_pushing.test_force_est();
-  h1_pushing.print_foot_force();
 
   //TEST PUSHING WHEELCHAIR
   //h1_pushing.test_pushing();

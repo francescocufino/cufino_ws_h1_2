@@ -27,8 +27,6 @@
 #include <unitree/robot/channel/channel_subscriber.hpp>
 
 
-//GO2
-#include <unitree/idl/go2/LowState_.hpp>
 /**
  * @class Arm_motion
  * @brief A class for basic arm motion.
@@ -81,7 +79,6 @@ class Arm_motion{
     };
     //flags
     bool first_cb = false;
-    bool first_cb_go2 = false;
     bool arm_initialized = false;
     //parameters
     const std::string kTopicArmSDK = "rt/arm_sdk";
@@ -136,9 +133,6 @@ class Arm_motion{
     unitree::robot::ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> low_state_subscriber;
     std::shared_ptr<unitree_hg::msg::dds_::LowState_> state_msg;
 
-    //GO2
-    unitree::robot::ChannelSubscriberPtr<unitree_go::msg::dds_::LowState_> low_state_subscriber_go2;
-    std::shared_ptr<unitree_go::msg::dds_::LowState_> state_msg_go2;
 
 
   public:
@@ -193,9 +187,6 @@ class Arm_motion{
      * WaistYaw
      */
     std::array<float, 15> get_est_torques();
-
-    void print_foot_force();
-
 
 
   };
