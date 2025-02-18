@@ -27,6 +27,11 @@ Arm_motion::Arm_motion(){
       }, 
       1
   );
+  //Set gains in command msg
+  for (int j = 0; j < arm_joints.size(); ++j) {
+  msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
+  msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
+  }
 }
 
 
@@ -65,8 +70,6 @@ void Arm_motion::initialize_arms(){
       q_cmd.at(j) = init_pos.at(j) * phase + current_jpos.at(j) * (1 - phase);
       msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
     }
 
@@ -109,8 +112,6 @@ void Arm_motion::move_arms_integral(std::array<float, 15> q_f, float t_f){
       //std::cout << "q" << j << ": " << current_jpos_des.at(j) << ' ';
       msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
     }
     //std::cout << std::endl;
@@ -179,8 +180,6 @@ void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
       //std::cout << "q" << j << ": " << q_cmd.at(j) << ' ';
       msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).kp(kp_array.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).kd(kd_array.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
     }
     //std::cout << std::endl;

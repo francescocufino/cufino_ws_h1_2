@@ -29,7 +29,7 @@
  * @class Pushing
  * @brief A class for pushing exploiting locomotion, arm motion, hand motion.
  */ 
-class Pushing : /*public Locomotion,*/ public Arm_motion, public Hand_motion{
+class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
   private:
     H1_2_kdl h1_2;
 
@@ -104,11 +104,17 @@ int main(int argc, char const *argv[]) {
 
     unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
     Pushing h1_pushing;
+    // std::array<float, 15> q; q=h1_pushing.Arm_motion::get_angles();
+    // for (int j = 0; j < q.size(); ++j) {
+    //   std::cout << q.at(j) << ", ";
+    // }
+
+    std::array<float, 15> arm_pos_force_test = {0.060183, 0.0551721, 0.000710487, 1.18461, 0.0328448, 0.0337567, -0.0323732,
+                                               0.0184591, -0.000766754, -0.0243986, -0.0613762, -0.064399, 0.0569582, -0.0392926,
+                                               -0.00184074};
     h1_pushing.initialize_arms();
-    std::array<float, 15> q; q=h1_pushing.Arm_motion::get_angles();
-    for (int j = 0; j < q.size(); ++j) {
-      std::cout << q.at(j) << ", ";
-    }
+    h1_pushing.move_arms_polynomial(arm_pos_force_test, 3);
+    
 
     while (true){
        f_est = h1_pushing.get_est_forces();

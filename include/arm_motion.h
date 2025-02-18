@@ -82,21 +82,22 @@ class Arm_motion{
     const std::string kTopicArmSDK = "rt/arm_sdk";
     const std::string kTopicState = "rt/lowstate";
 
-    
+    /*
     const std::array<float, 15> kp_array = { 120, 120, 80, 50, 50, 50, 50, 
                                     120, 120, 80, 50, 50, 50, 50, 
                                     200 };
     const std::array<float, 15> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
-    /*                                
+                                    */
+                                  
     const std::array<float, 15> kp_array = { 240, 240, 160, 100, 50, 50, 50, 
                                     240, 240, 160, 100, 50, 50, 50, 
                                     200 };
     const std::array<float, 15> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
-    */
+    
     const std::array<float, 15> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
                                     0.f, -0.3, 0.f, 0, 0, 0, 0,
                                     0.f};
