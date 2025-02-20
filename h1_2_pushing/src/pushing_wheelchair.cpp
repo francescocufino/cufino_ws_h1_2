@@ -60,9 +60,9 @@ std::array<float, 12> Pushing::get_est_forces(){
 
 
 void Pushing::test_pushing(){
-  std::array<float, 15> arm_pos_pushing_test = {0.060183, 0.0551721, 0.000710487, 1.18461, 0.0328448, 0.0337567, -0.0323732,
-                                              0.0184591, -0.000766754, -0.0243986, -0.0613762, -0.064399, 0.0569582, -0.0392926,
-                                              -0.00184074};//to define
+  std::array<float, 15> arm_pos_pushing_test = {-0.2, 0.3,  0.f, 0, 0, 0, 0,
+                                    -0.0316936, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
+                                    0.f};;//to define
   std::array<float, 12> hand_opened_pos; hand_opened_pos.fill(1);
   std::array<float, 12> hand_closed_pos; hand_closed_pos.fill(0);
   initialize_arms();
@@ -157,7 +157,7 @@ int main(int argc, char const *argv[]) {
   //h1_pushing.test_force_est();
 
   //TEST PUSHING WHEELCHAIR
-  //h1_pushing.test_pushing();
+  h1_pushing.test_pushing();
   
 
   //READ POSITION
