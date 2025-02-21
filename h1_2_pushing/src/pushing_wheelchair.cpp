@@ -42,6 +42,8 @@ class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
     std::array<float, 12> get_est_forces();
     void test_pushing();
     void test_force_est();
+    void test_COM_motion();
+    void stop_motion();
 
     //stream data UDP
     int create_UDP_socket();
@@ -59,7 +61,7 @@ std::array<float, 12> Pushing::get_est_forces(){
 }
 
 
-void Pushing::test_pushing(){//0.0316936,−0.240571,0.109105,−0.394378,−0.0633168,−0.361801,0.133496
+void Pushing::test_pushing(){
   // std::array<float, 15> arm_pos_pushing_test = {-0.0316936, 0.240571, -0.109105, 0.394378, -0.0633168, 0.361801, -0.133496,
   //                                   -0.0316936, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
   //                                   0.f};
@@ -92,7 +94,12 @@ void Pushing::test_pushing(){//0.0316936,−0.240571,0.109105,−0.394378,−0.0
 }
 
 
-
+void Pushing::stop_motion(){
+  stop_walk();
+  stop_arms();
+  std::array<float, 12> hand_opened_pos; hand_opened_pos.fill(1);
+  move_hands(hand_opened_pos);
+}
 
 
 int Pushing::create_UDP_socket(){  
@@ -155,18 +162,49 @@ void Pushing::test_force_est(){
 
 }
 
+void Pushing::test_COM_motion(){
+  std::array<float, 15> arm_pos_COM_test = {-1.2, 0, 0, 1.43903, 0, 0, 0,
+                                            -1.2, 0, 0, 1.43903, 0, 0, 0, 
+                                            0};
+  initialize_arms();
+  move_arms_polynomial(arm_pos_COM_test, 3);
+  std::cout << "Press ENTER to start rotate ...";
+  std::cin.get();
+  walk(0,0,0.3);
+  std::cout << "Press ENTER to stop rotate ...";
+  std::cin.get();
+  stop_walk();
+  
+
+}
+
+Pushing* global_pushing_instance;
+
+void handleSigint(int sig) {
+    std::cout << "\nInterrupt signal (" << sig << ") received. Stopping robot motion...\n";
+    global_pushing_instance->stop_motion();
+    exit(0); // Terminate the program
+}
 
 
 
 int main(int argc, char const *argv[]) {
   unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
   Pushing h1_pushing;
+  //Stop everything when ctrl+c is pressed
+  global_pushing_instance = & h1_pushing;
+  if (signal(SIGINT, handleSigint) == SIG_ERR) {
+    std::cerr << "Error setting up signal handler." << std::endl;
+    return 1;
+  }
 
   //TEST FORCE ESTIMATION
   //h1_pushing.test_force_est();
 
   //TEST PUSHING WHEELCHAIR
-  h1_pushing.test_pushing();
+  //h1_pushing.test_pushing();
+
+  h1_pushing.test_COM_motion();
   
 
   //READ POSITION
