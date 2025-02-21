@@ -59,12 +59,20 @@ std::array<float, 12> Pushing::get_est_forces(){
 }
 
 
-void Pushing::test_pushing(){
-  std::array<float, 15> arm_pos_pushing_test = {-0.2, 0.3,  0.f, 0, 0, 0, 0,
-                                    -0.0316936, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
-                                    0.f};;//to define
+void Pushing::test_pushing(){//0.0316936,−0.240571,0.109105,−0.394378,−0.0633168,−0.361801,0.133496
+  // std::array<float, 15> arm_pos_pushing_test = {-0.0316936, 0.240571, -0.109105, 0.394378, -0.0633168, 0.361801, -0.133496,
+  //                                   -0.0316936, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
+  //                                   0.f};
+  std::array<float, 15> arm_pos_pushing_test = {-0.0237002, 0.21376, -0.121089, 0.41662, -0.0699079, 0.359728, -0.142376,
+                                              -0.0145812, -0.210837, 0.12468, 0.440892, 0.0750732, 0.37466, 0.150034, 
+                                              -0.000562433,};
+  
+  std::array<float, 15> arm_pos_2_pushing_test = {0.5, 0.240571, -0.109105, 0.394378, -0.0633168, 0.361801, -0.133496,
+                                    0.5, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
+                                    0.f};
   std::array<float, 12> hand_opened_pos; hand_opened_pos.fill(1);
   std::array<float, 12> hand_closed_pos; hand_closed_pos.fill(0);
+  move_hands(hand_opened_pos);
   initialize_arms();
   move_arms_polynomial(arm_pos_pushing_test, 3);
   std::cout << "Press ENTER to grasp ...";
@@ -72,14 +80,15 @@ void Pushing::test_pushing(){
   move_hands(hand_closed_pos);
   std::cout << "Press ENTER to start walking ...";
   std::cin.get();
-  walk(0.1, 0, 0);
+  walk(0.2, 0, 0);
   std::cout << "Press ENTER to stop walking ...";
   std::cin.get();
   stop_walk();
   std::cout << "Press ENTER to release grasp and stop arms ...";
   std::cin.get();
   move_hands(hand_opened_pos);
-  stop_arms();
+  move_arms_polynomial(arm_pos_2_pushing_test, 3);
+  //stop_arms();
 }
 
 
