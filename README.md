@@ -1,10 +1,6 @@
 <!-- GETTING STARTED -->
 ## Overview
 This repo contains the code for cufino workspace on unitree h1_2.
- 
-
-## Dependencies
-unitree_sdk2, boost, spdlog are required.
 
 
 ## Compilation
