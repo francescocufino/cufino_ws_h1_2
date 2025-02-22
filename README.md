@@ -42,7 +42,7 @@ make
 
 ## Connection to the robot
 ### Tethered connection
-1. Connect to the robot switch ethernet. The 8 pin - ethernet cable has to be connected to the upper right port of the robot, tha 12 V switch ethernet shown in ![scheme](./images/h1_2_interfaces.png "Interfaces").
+1. Connect to the robot switch ethernet. The 8 pin - ethernet cable has to be connected to the upper right port of the robot, the 12 V switch ethernet shown here ![scheme](./images/h1_2_interfaces.png "Interfaces").
 
 2. Set your wired connection to be in the robot subnet, setting your static IP address
 Settings -> Network -> Wired -> settings icon -> tab IPv4 -> method = manual -> in Address write 192.168.123.222 netmask 255.255.255.0
@@ -88,10 +88,10 @@ dmesg -w
 
 ## Subfolders
 From now, please refer to the respective subfolders
-[h1_2_motion](./h1_2_motion) contains the implementation of basic motions (arm, hands, locomotion) exploiting high level functionalitis of unitree_sdk2;
-[h1_2_demo](./h1_2_demo) contains an example user program based on h1_2_motion to perform whole body motion;
-[h1_2_pushing](./h1_2_pushing) contains the code under development for the wheelchair pushing project;
-[h1_2_description](./h1_2_description) contains a universal humanoid robot description (URDF & MJCF) for the [Unitree H1_2](https://www.unitree.com/h1), developed by [Unitree Robotics](https://www.unitree.com/).
+- [h1_2_motion](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_motion) contains the implementation of basic motions (arm, hands, locomotion) exploiting high level functionalitis of unitree_sdk2;
+- [h1_2_demo](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_demo) contains an example user program based on h1_2_motion to perform whole body motion;
+- [h1_2_pushing](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_pushing) contains the code under development for the wheelchair pushing project;
+- [h1_2_description](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_description) contains a universal humanoid robot description (URDF & MJCF) for the [Unitree H1_2](https://www.unitree.com/h1), developed by [Unitree Robotics](https://www.unitree.com/).
 
    
    

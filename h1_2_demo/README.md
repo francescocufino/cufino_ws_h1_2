@@ -6,7 +6,7 @@ This repo contains an example demo based on h1_2_motion to perform whole body mo
 ## Execution
 0. You can decide the routine of the demo editing the file routine
 ```sh
-nano <YOUR_PATH_TO_WS>/cufino_ws_h1_2/h1_2_demo/config/routine.txt. 
+nano <YOUR_PATH_TO_WS>/cufino_ws_h1_2/h1_2_demo/config/routine.txt
 ```
 and write `shake` for shake hand, `wave` for waving, `fist_bump` for fist bump.
 
@@ -20,7 +20,7 @@ source docker_run.sh
 cd ~/cufino_ws_h1_2/build
 sudo ./bin/hand_service -s /dev/ttyUSB0
 ```
-If this command fails, substitute ttyUSB1 or ttyUSB2 in place of ttyUSB0, depending on where the hands have been mounted.
+If this command fails, substitute `ttyUSB1` or `ttyUSB2` in place of `ttyUSB0`, depending on where the hands have been mounted.
 > ⚠️ **Note:** It is fundamental to connect the hands BEFORE running the container, otherwise they are not seen from inside the container.
 
 
@@ -31,11 +31,11 @@ cd ~/cufino_ws_h1_2/build
 ./bin/whole_body_motion eth0
 ```
 The <CONTAINER_ID> of the running container can be seen with `docker ps`.
-If the command doesn't work, in place of eth0 you have to substitute your ethernet network interface. You can see it running
+If the command doesn't work, in place of `eth0` you have to substitute your ethernet network interface. You can see it running
 ```sh
 ifconfig
 ```
-on your machine. This program lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
+on your machine. This command lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
 
 ## Execution without docker
 If you are not using docker, supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
@@ -44,7 +44,7 @@ If you are not using docker, supposing that you have already built the code, and
 cd <YOUR_PATH_TO_WS>/cufino_ws_h1_2/build
 sudo ./bin/hand_service -s /dev/ttyUSB0
 ```
-If this command fails, substitute ttyUSB1 or ttyUSB2 in place of ttyUSB0, depending on where the hands have been mounted.
+If this command fails, substitute `ttyUSB1` or `ttyUSB2` in place of `ttyUSB0`, depending on where the hands have been mounted.
 
 
 2. Run the program
@@ -52,11 +52,11 @@ If this command fails, substitute ttyUSB1 or ttyUSB2 in place of ttyUSB0, depend
 cd <YOUR_PATH_TO_REPO>/cufino_ws_h1_2/build
 ./bin/whole_body_motion eth0
 ```
-If the command doesn't work, in place of eth0 you have to substitute your ethernet network interface. You can see it running
+If the command doesn't work, in place of `eth0` you have to substitute your ethernet network interface. You can see it running
 ```sh
 ifconfig
 ```
-on your machine. This program lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
+on your machine. This command lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
 
 
    
