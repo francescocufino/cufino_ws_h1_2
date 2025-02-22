@@ -1,59 +1,66 @@
 <!-- GETTING STARTED -->
 ## Overview
-This repo contains the code for cufino workspace on unitree h1_2. In the folder h1_2_test, a modular sw has been implemented to use the functionalities of high level locomotion, arm motion and hand motion in one single very simple script whole_body_motion.cpp.
+This repo contains the code for cufino workspace on unitree h1_2.
  
 
 ## Dependencies
 unitree_sdk2, boost, spdlog are required.
 
 
-## Compilation and execution
+## Compilation
+If you are using docker, and you already built the docker image following the [README.md](./../README.md), skip this section (suggested). If you are not using docker, and you want to compile this on you machine, follow this passages
 
-1. Clone the repo
+1. Install the dependencies
+unitree_sdk2
+```bash
+git clone https://github.com/unitreerobotics/unitree_sdk2.git
+cd unitree_sdk2
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
+Eigen, boost, spdlog, kdl
+```bash
+sudo apt-get install -y libeigen3-dev libboost-all-dev libspdlog-dev liborocos-kdl-dev libkdl-parser-dev
+```
+
+2. Clone the repo
 ```sh
 git clone https://github.com/francescocufino/cufino_ws_h1_2.git
 ```
 
-2. Navigate inside the repo and create build folder
+3. Navigate inside the repo and create build folder and compile
 ```sh
 cd cufino_ws_h1_2
 mkdir build
-```
-
-3. From the build folder, run cmake and make
-```sh
 cd build
 cmake ..
 make
 ```
-4. From the build folder, run
-```sh
-sudo ./bin/hand_service -s /dev/ttyUSB0
-```
-If it doesn't work, substitute ttyUSB1 or ttyUSB2 in place of ttyUSB0.
 
-5. Open another terminal and from the build folder, run
-```sh
-./bin/whole_body_motion eth0
-```
-If it doesn't work, see the network interface through ifconfig and substitute it in place of eth0.
+## Connection to the robot
+### Tethered connection
+1. Connect to the robot switch ethernet. The 8 pin - ethernet cable has to be connected to the upper right port of the robot, tha 12 V switch ethernet shown in ![scheme](./images/h1_2_interfaces.png "Interfaces").
 
-## Development
-If you are on the same network of the robot, you can directly connect to it and develop from the PC2 through SSH. In this case, you can use the extension of vscode SSH.
+2. Set your wired connection to be in the robot subnet, setting your static IP address
+Settings -> Network -> Wired -> settings icon -> tab IPv4 -> method = manual -> in Address write 192.168.123.222 netmask 255.255.255.0
 
-## Documentation
-To visualize the documentation, install doxygen and generate the html
+3. Ping the robot computers to check the connection
 ```sh
-sudo apt install doxygen
-cd <YOUR_PATH_TO_REPO>
-doxygen Doxyfile
-xdg-open html/index.html
+ping 192.168.123.161
+ping 192.168.123.162
 ```
 
-##Connection to robot PC2
-To connect to the robot PC2 through ssh you can do the following procedure:
+4. If you want to run the applications from your external machine, you are done. If you want to connect to the robot high level computer and run the application from there (ACTUALLY BLOCKED), connect with ssh
+```sh
+ssh unitree@192.168.123.162
+```
+Password Unitree0408.
 
-1. Ensure that the robot PC2 is turned on and the wi fi adapter is connected. Then, it automatically should connect to the H1_unitree network. Connect to the network
+### Untethered connection (ACTUALLY BLOCKED)
+1. Ensure that the robot PC2 is turned on and the wi fi adapter is connected. Then, it automatically should connect to the H1_unitree network. Connect your machine to the same network
 SSID: H1_unitree
 pwd: Unitree0408
 
@@ -68,21 +75,24 @@ Then connect
 ssh unitree@192.168.2.10
 ```
 Password Unitree0408.
-Now you are connected.
 
-3. If the robot PC2 is not shown and you are not able to connect, either it did not turned on or you should reconnect to the network. In this case, connect through ethernet (the port is the same of low level pc), assign to your machine a static address in the subnet 192.168.123.0/24, like 192.168.123.222, and run
+## Connection to the hands
+1. Visualize the kernel msg on your machine
 ```sh
-ssh unitree@192.168.123.162
-```
-Password Unitree0408.
-Now you are connected.
-
-If you want to reconnect the robot to the wi fi network in such way to avoid using the cable, type
-```sh
-sudo nmcli dev wifi connect "H1_unitree" password "Unitree0408"
+dmesg -w
 ```
 
-   
+2. Connect the blue usb serial adapter on the robot back to your machine. When connecting, a kernel msg should be visualized in the terminal opened at point 1, telling you where the device has been mounted. It usually should be ttyUSB0. If you visualize this message, the connection was succesful.
+
+
+
+## Subfolders
+From now, please refer to the respective subfolders
+[h1_2_motion](./h1_2_motion) contains the implementation of basic motions (arm, hands, locomotion) exploiting high level functionalitis of unitree_sdk2;
+[h1_2_demo](./h1_2_demo) contains an example user program based on h1_2_motion to perform whole body motion;
+[h1_2_pushing](./h1_2_pushing) contains the code under development for the wheelchair pushing project;
+[h1_2_description](./h1_2_description) contains a universal humanoid robot description (URDF & MJCF) for the [Unitree H1_2](https://www.unitree.com/h1), developed by [Unitree Robotics](https://www.unitree.com/).
+
    
    
    
