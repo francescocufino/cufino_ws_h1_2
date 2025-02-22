@@ -73,6 +73,8 @@ ssh unitree@192.168.2.10
 Password Unitree0408.
 
 ## Connection to the hands
+The hands have to be connected on the machine on which the program will run. Actually, you can run the program only on external machine since the robot PC2 is unaccessible.
+
 1. Visualize the kernel msg on your machine
 ```sh
 dmesg -w
