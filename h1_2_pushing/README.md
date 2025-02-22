@@ -4,7 +4,7 @@ This repo contains  contains the code under development for the wheelchair pushi
  
 
 ### Execution using docker
-If you are using docker and you built the image from [README.md](./../../README.md), supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
+If you are using docker and you built the image from [README.md](https://github.com/francescocufino/unitree_h1_2/README.md), supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
 
 1. Run the container, navigate in the build folder you created when building, and run the hand service. The password for sudo is 'user'.
 ```sh

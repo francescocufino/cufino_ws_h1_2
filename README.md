@@ -4,7 +4,7 @@ This repo contains the code for cufino workspace on unitree h1_2.
 
 
 ## Compilation
-If you are using docker, and you already built the docker image following the [README.md](./../README.md), skip this section (suggested). If you are not using docker, and you want to compile this on you machine, follow this passages
+If you are using docker, and you already built the docker image following the [README.md](https://github.com/francescocufino/unitree_h1_2/README.md), skip this section (suggested). If you are not using docker, and you want to compile this on you machine, follow this passages
 
 1. Install the dependencies
 unitree_sdk2
