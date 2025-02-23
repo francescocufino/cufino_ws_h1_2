@@ -202,9 +202,9 @@ int main(int argc, char const *argv[]) {
   //h1_pushing.test_force_est();
 
   //TEST PUSHING WHEELCHAIR
-  //h1_pushing.test_pushing();
+  h1_pushing.test_pushing();
 
-  h1_pushing.test_COM_motion();
+  //h1_pushing.test_COM_motion();
   
 
   //READ POSITION
