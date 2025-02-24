@@ -70,7 +70,7 @@ class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
     
     //Save data to csv
     void store_data();
-    void writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data);
+    void writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data, const std::vector<std::string>& headers);
 
   };
 
@@ -229,28 +229,55 @@ void Pushing::store_data(){
   std::cout << "Grasping released. Starting data writing...\n";
   
   // Write everything to files when grasping has been releaseed
-  writeDataToCSV("left_arm_angles.csv", leftArmAngles);
-  writeDataToCSV("right_arm_angles.csv", rightArmAngles);
-  writeDataToCSV("left_arm_torques.csv", leftArmTorques);
-  writeDataToCSV("right_arm_torques.csv", rightArmTorques);
-  writeDataToCSV("left_arm_wrench.csv", armWrenchLeft);
-  writeDataToCSV("right_arm_wrench.csv", armWrenchRight);
+   std::vector<std::string> jointHeaders;
+    for (int i = 0; i < LEFT_ARM_JOINTS; i++) jointHeaders.push_back("joint_positions.joints_left_arm.q_" + std::to_string(i));
+    for (int i = 0; i < RIGHT_ARM_JOINTS; i++) jointHeaders.push_back("joint_positions.joints_right_arm.q_" + std::to_string(i));
+    jointHeaders.push_back("waist_angle.q_w");
 
-  std::ofstream waistFile("waist_angles.csv");
-  if (waistFile.is_open()) {
-      for (const auto& angle : waistAngles) {
-          waistFile << angle << std::endl;
-      }
-      waistFile.close();
-  }
+    std::vector<std::string> torqueHeaders;
+    for (int i = 0; i < LEFT_ARM_JOINTS; i++) torqueHeaders.push_back("joint_torques.torques_left_arm.tau_" + std::to_string(i));
+    for (int i = 0; i < RIGHT_ARM_JOINTS; i++) torqueHeaders.push_back("joint_torques.torques_right_arm.tau_" + std::to_string(i));
 
-  std::cout << "Data writing complete!\n";
+    std::vector<std::string> wrenchHeaders = { "wrench.wrench_left_hand.f_x", "f_y", "f_z", "tau_x", "tau_y", "tau_z",
+                                               "wrench.wrench_right_hand.f_x", "f_y", "f_z", "tau_x", "tau_y", "tau_z" };
+
+    writeDataToCSV("joint_positions_left.csv", leftArmAngles, jointHeaders);
+    writeDataToCSV("joint_positions_right.csv", rightArmAngles, jointHeaders);
+    writeDataToCSV("joint_torques_left.csv", leftArmTorques, torqueHeaders);
+    writeDataToCSV("joint_torques_right.csv", rightArmTorques, torqueHeaders);
+
+    std::vector<std::vector<float>> combinedWrench;
+    for (size_t i = 0; i < armWrenchLeft.size(); i++) {
+        std::vector<float> combined(armWrenchLeft[i]);
+        combined.insert(combined.end(), armWrenchRight[i].begin(), armWrenchRight[i].end());
+        combinedWrench.push_back(combined);
+    }
+
+    writeDataToCSV("wrench.csv", combinedWrench, wrenchHeaders);
+
+    std::ofstream waistFile("waist_angle.csv");
+    waistFile << "waist_angle.q_w\n";
+    if (waistFile.is_open()) {
+        for (const auto& angle : waistAngles) {
+            waistFile << angle << std::endl;
+        }
+        waistFile.close();
+    }
+
+    std::cout << "Data writing complete for PlotJuggler, with both left and right arm data!\n";
   
 }
 
-void Pushing::writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data) {
+void Pushing::writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data, const std::vector<std::string>& headers) {
   std::ofstream file(filename);
   if (file.is_open()) {
+    //Write header
+    for (size_t i = 0; i < headers.size(); ++i) {
+        file << headers[i];
+        if (i < headers.size() - 1) file << ",";
+    }
+    file << std::endl;
+    //Fill file
       for (const auto& row : data) {
           for (size_t i = 0; i < row.size(); i++) {
               file << row[i];
