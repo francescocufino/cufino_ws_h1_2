@@ -10,6 +10,8 @@
 #include "arm_motion.h"
 #include "hand_motion.h"
 
+#include <boost/thread.hpp>
+
 //UDP socket for streaming data
 #include <iostream>
 #include <sstream>
@@ -24,6 +26,12 @@
 #define UDP_PORT 5005
 #define SEND_INTERVAL 100000 // 100ms
 
+const int JOINT_DIM = 15;
+const int WRENCH_DIM = 6;
+const int LEFT_ARM_JOINTS = 7;
+const int RIGHT_ARM_JOINTS = 7;
+const int WAIST_INDEX = 14;
+
 
 /**
  * @class Pushing
@@ -32,10 +40,21 @@
 class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
   private:
     H1_2_kdl h1_2;
+    bool grasped = false;
 
     //stream data UDP
     int sockfd;
     struct sockaddr_in serverAddr;
+    
+    //Data storage
+    std::vector<std::vector<float>> leftArmTorques;
+    std::vector<std::vector<float>> rightArmTorques;
+    std::vector<std::vector<float>> leftArmAngles;
+    std::vector<std::vector<float>> rightArmAngles;
+    std::vector<std::vector<float>> armWrenchLeft;
+    std::vector<std::vector<float>> armWrenchRight;
+    std::vector<float> waistAngles;
+
 
   public:
     Pushing();
@@ -48,7 +67,10 @@ class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
     //stream data UDP
     int create_UDP_socket();
     bool send_wrenches_UDP(std::array<float, 12> f_est);
-
+    
+    //Save data to csv
+    void store_data();
+    void writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data);
 
   };
 
@@ -80,6 +102,7 @@ void Pushing::test_pushing(){
   std::cout << "Press ENTER to grasp ...";
   std::cin.get();
   move_hands(hand_closed_pos);
+  grasped = true;
   std::cout << "Press ENTER to start walking ...";
   std::cin.get();
   walk(0.2, 0, 0);
@@ -89,6 +112,7 @@ void Pushing::test_pushing(){
   std::cout << "Press ENTER to release grasp and stop arms ...";
   std::cin.get();
   move_hands(hand_opened_pos);
+  grasped = false;
   move_arms_polynomial(arm_pos_2_pushing_test, 3);
   //stop_arms();
 }
@@ -178,6 +202,69 @@ void Pushing::test_COM_motion(){
 
 }
 
+void Pushing::store_data(){
+	while(!grasped) {usleep(100000);}
+	std::cout << "Grasping done. Starting data storage...\n";
+  std::array<float, 15> jointData;
+  std::array<float, 15> torqueData;
+  std::array<float, 12> wrenchData;
+
+	while(grasped){
+		//Get data
+    jointData = Arm_motion::get_angles();
+    torqueData = Arm_motion::get_est_torques();
+    wrenchData = h1_2.compute_ee_forces(jointData, torqueData);
+
+    //Save data in data structure
+    leftArmAngles.push_back(std::vector<float>(jointData.begin(), jointData.begin() + LEFT_ARM_JOINTS));
+    rightArmAngles.push_back(std::vector<float>(jointData.begin() + LEFT_ARM_JOINTS, jointData.begin() + LEFT_ARM_JOINTS + RIGHT_ARM_JOINTS));
+    waistAngles.push_back(jointData[WAIST_INDEX]);
+    leftArmTorques.push_back(std::vector<float>(torqueData.begin(), torqueData.begin() + LEFT_ARM_JOINTS));
+    rightArmTorques.push_back(std::vector<float>(torqueData.begin() + LEFT_ARM_JOINTS, torqueData.begin() + LEFT_ARM_JOINTS + RIGHT_ARM_JOINTS));
+    armWrenchLeft.push_back(std::vector<float>(wrenchData.begin(), wrenchData.begin() + WRENCH_DIM));
+    armWrenchRight.push_back(std::vector<float>(wrenchData.begin() + WRENCH_DIM, wrenchData.begin() + WRENCH_DIM + WRENCH_DIM));
+		
+    usleep(100000);
+	}
+  std::cout << "Grasping released. Starting data writing...\n";
+  
+  // Write everything to files when grasping has been releaseed
+  writeDataToCSV("left_arm_angles.csv", leftArmAngles);
+  writeDataToCSV("right_arm_angles.csv", rightArmAngles);
+  writeDataToCSV("left_arm_torques.csv", leftArmTorques);
+  writeDataToCSV("right_arm_torques.csv", rightArmTorques);
+  writeDataToCSV("left_arm_wrench.csv", armWrenchLeft);
+  writeDataToCSV("right_arm_wrench.csv", armWrenchRight);
+
+  std::ofstream waistFile("waist_angles.csv");
+  if (waistFile.is_open()) {
+      for (const auto& angle : waistAngles) {
+          waistFile << angle << std::endl;
+      }
+      waistFile.close();
+  }
+
+  std::cout << "Data writing complete!\n";
+  
+}
+
+void Pushing::writeDataToCSV(const std::string& filename, const std::vector<std::vector<float>>& data) {
+  std::ofstream file(filename);
+  if (file.is_open()) {
+      for (const auto& row : data) {
+          for (size_t i = 0; i < row.size(); i++) {
+              file << row[i];
+              if (i < row.size() - 1) file << ",";
+          }
+          file << std::endl;
+      }
+      file.close();
+  } else {
+      std::cerr << "Unable to open file: " << filename << std::endl;
+  }
+}
+
+
 Pushing* global_pushing_instance;
 
 void handleSigint(int sig) {
@@ -191,6 +278,7 @@ void handleSigint(int sig) {
 int main(int argc, char const *argv[]) {
   unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
   Pushing h1_pushing;
+  
   //Stop everything when ctrl+c is pressed
   global_pushing_instance = & h1_pushing;
   if (signal(SIGINT, handleSigint) == SIG_ERR) {
@@ -201,9 +289,14 @@ int main(int argc, char const *argv[]) {
   //TEST FORCE ESTIMATION
   //h1_pushing.test_force_est();
 
-  //TEST PUSHING WHEELCHAIR
-  h1_pushing.test_pushing();
+  //TEST PUSHING WHEELCHAIR storing data
+  std::shared_ptr<boost::thread> thread1 = std::make_shared<boost::thread>(boost::bind(&Pushing::test_pushing,&h1_pushing));  
+  std::shared_ptr<boost::thread> thread2 = std::make_shared<boost::thread>(boost::bind(&Pushing::store_data,&h1_pushing));  
+  thread1->join();
+  thread2->join();
+  
 
+  //TEST COM MOTION
   //h1_pushing.test_COM_motion();
   
 
