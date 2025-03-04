@@ -43,10 +43,10 @@ Whole_body_motion::Whole_body_motion(){
 }
 
 void Whole_body_motion::wave_arm(){
-  std::array<float, 15> wave_1_pos = {-0.0923371 , 0.0433179 , 0.246224 , 1.45887 , 0.0195663 , 0.109725 , 0.00963151 ,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> wave_1_pos = {-0.0923371 , 0.0433179 , 0.246224 , 1.45887 , 0.0195663 , 0.109725 , 0.00963151 ,
                                     -0.4 , -0.0855193 , -0.0869789 , -0.714452 ,-1.47578 , 0.406538 , -0.312845 , 
                                     -0.000945929};
-  std::array<float, 15> wave_2_pos = {-0.0923371 , 0.0433179 , 0.246224 , 1.45887 , 0.0195663 , 0.109725 , 0.00963151 ,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> wave_2_pos = {-0.0923371 , 0.0433179 , 0.246224 , 1.45887 , 0.0195663 , 0.109725 , 0.00963151 ,
                                     -0.4 , -0.0855193 , -0.0869789 , -0.714452 ,-1.47578 , -0.406538 , -0.312845 , 
                                     -0.000945929};
 
@@ -61,9 +61,9 @@ void Whole_body_motion::wave_arm(){
 }
 
 void Whole_body_motion::wave_hand(){
-  std::array<float, 12> wave_closed_pos = {0,0,0,0,0,0,
+  std::array<float, HANDS_JOINTS_DIM> wave_closed_pos = {0,0,0,0,0,0,
                                           1,1,1,1,1,1};
-  std::array<float, 12> wave_opened_pos; wave_opened_pos.fill(1);
+  std::array<float, HANDS_JOINTS_DIM> wave_opened_pos; wave_opened_pos.fill(1);
   while(1){
     //Start iterative motion from close to open pos and viceversa
     move_hands(wave_closed_pos);
@@ -85,10 +85,10 @@ void Whole_body_motion::wave_arm_hand(){
 void Whole_body_motion::shake_hand(){
   //Joint order: right [pinky, ring, middle, index, thumb_bend, thumb_rotation],
   //   * left [pinky, ring, middle, index, thumb_bend, thumb_rotation]
-  std::array<float, 12> hand_shake_opened_pos; hand_shake_opened_pos.fill(1);
-  std::array<float, 12> hand_shake_closed_pos = {0.5,0.6,0.7,0.8,0.7,0.7,
+  std::array<float, HANDS_JOINTS_DIM> hand_shake_opened_pos; hand_shake_opened_pos.fill(1);
+  std::array<float, HANDS_JOINTS_DIM> hand_shake_closed_pos = {0.5,0.6,0.7,0.8,0.7,0.7,
                                           1,1,1,1,1,1};
-  std::array<float, 15> arm_target_pos = {0.00200272, 0.065944, -0.0749669, 1.43511, 0.273104, 0.0142946, 0.00735462,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> arm_target_pos = {0.00200272, 0.065944, -0.0749669, 1.43511, 0.273104, 0.0142946, 0.00735462,
                                                 -0.2, -0.00331497, -0.0423436, 0.459666, 0.0179806, -0.483458, -0.0203335, 
                                                 0.0416987};
   initialize_arms();                                              
@@ -105,13 +105,13 @@ void Whole_body_motion::shake_hand(){
 void Whole_body_motion::fist_bump(){
    //Joint order: right [pinky, ring, middle, index, thumb_bend, thumb_rotation],
   //   * left [pinky, ring, middle, index, thumb_bend, thumb_rotation]
-  std::array<float, 12> hand_fist_bump_opened_pos; hand_fist_bump_opened_pos.fill(1);
-  std::array<float, 12> hand_fist_bump_closed_pos = {0,0,0,0,0,0,
+  std::array<float, HANDS_JOINTS_DIM> hand_fist_bump_opened_pos; hand_fist_bump_opened_pos.fill(1);
+  std::array<float, HANDS_JOINTS_DIM> hand_fist_bump_closed_pos = {0,0,0,0,0,0,
                                           1,1,1,1,1,1};
-  std::array<float, 15> arm_pos_fist_bump_1 = {-0.0811305, 0.120383 , -0.297125 , 1.41618 , -0.103212 , -0.104181 , -0.0382934 ,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_fist_bump_1 = {-0.0811305, 0.120383 , -0.297125 , 1.41618 , -0.103212 , -0.104181 , -0.0382934 ,
                                                  -0.443636, 0.0161242, 0.0254326, 0.388924, -1.5967, -0.136587, -0.0239768,
                                                   -0.164673};
-  std::array<float, 15> arm_pos_fist_bump_2 = {-0.0811305, 0.120383 , -0.297125 , 1.41618 , -0.103212 , -0.104181 , -0.0382934 ,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_fist_bump_2 = {-0.0811305, 0.120383 , -0.297125 , 1.41618 , -0.103212 , -0.104181 , -0.0382934 ,
                                                  0.152418 , 0.000162125 , 0.251394 , -0.227234 , -1.57687 , -0.0975542 , -0.0243244 , 
                                                  -0.17017};
   initialize_arms();                                              
@@ -141,16 +141,16 @@ int main(int argc, char const *argv[]) {
   Whole_body_motion h1_wbm;
 
   //WHOLE BODY MOTION TEST
-  // std::array<float, 15> target_pos_arms_lateral_lift = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
+  // std::array<float, UPPER_LIMB_JOINTS_DIM> target_pos_arms_lateral_lift = {0.f, M_PI_2,  0.f, M_PI_2, 0, 0, 0,
   //                                  0.f, -M_PI_2, 0.f, M_PI_2, 0, 0, 0,
   //                                  0.f};
 
-  // std::array<float, 15> target_pos_arms_forward = {-M_PI/(12.f), 0.3,  0.f, M_PI/(12.f), 0, 0, 0,
+  // std::array<float, UPPER_LIMB_JOINTS_DIM> target_pos_arms_forward = {-M_PI/(12.f), 0.3,  0.f, M_PI/(12.f), 0, 0, 0,
   //                                  -M_PI/(12.f), -0.3, 0.f, M_PI/(12.f), 0, 0, 0,
   //                                  0.f};
 
-  // std::array<float, 12> target_pos_hands_closed; target_pos_hands_closed.fill(0);
-  // std::array<float, 12> target_pos_hands_opened; target_pos_hands_opened.fill(1);
+  // std::array<float, HANDS_JOINTS_DIM> target_pos_hands_closed; target_pos_hands_closed.fill(0);
+  // std::array<float, HANDS_JOINTS_DIM> target_pos_hands_opened; target_pos_hands_opened.fill(1);
 
   
   // h1_wbm.initialize_arms();
@@ -162,7 +162,7 @@ int main(int argc, char const *argv[]) {
 
 
   //PRINT INIT POS
-  //std::array<float, 15> q; q=h1_wbm.Arm_motion::get_angles();
+  //std::array<float, JOINTS_DIM> q; q=h1_wbm.Arm_motion::get_angles();
   //for (int j = 0; j < q.size(); ++j) {
   //    //std::cout << "q" << j << ": " << q.at(j) << ' ';
   //  }

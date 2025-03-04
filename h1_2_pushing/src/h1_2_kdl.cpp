@@ -31,6 +31,8 @@ bool H1_2_kdl::init_robot_model(){
   _tau_est_l.resize(7);
   _f_est_l.resize(6);
   _f_est_r.resize(6);
+  _f_est_l_old.resize(6);
+  _f_est_r_old.resize(6);
 
   //Allocate jacobian solver and jntarray
   _jacobian_l_solver=std::make_shared<KDL::ChainJntToJacSolver>(_k_chain_l);
@@ -42,7 +44,7 @@ bool H1_2_kdl::init_robot_model(){
 
 }
 
-void H1_2_kdl::update_state(std::array<float, 15> q, std::array<float, 15> tau_est){
+void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est){
   //Update joints and torques
   for(int i=0; i<14; i++){
     if(i<=6){
@@ -69,11 +71,21 @@ void H1_2_kdl::update_state(std::array<float, 15> q, std::array<float, 15> tau_e
     _jacobian_r_eigen = _jacobian_r.data;
 }
 
-std::array<float, 12> H1_2_kdl::compute_ee_forces(std::array<float, 15> q, std::array<float, 15> tau_est){
+std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
+  //update state
   update_state(q, tau_est);
-  _f_est_l = r_pinv(_jacobian_l_eigen.transpose()) * _tau_est_l;
-  _f_est_r = r_pinv(_jacobian_r_eigen.transpose()) * _tau_est_r;
-  std::array<float, 12> f_ee;
+  //transform torques in forces at ee
+  _f_est_l = r_pinv_svd(_jacobian_l_eigen.transpose()) * _tau_est_l;
+  _f_est_r = r_pinv_svd(_jacobian_r_eigen.transpose()) * _tau_est_r;
+  //filter forces (after first iteration)
+  if(first_force_comput) {
+  _f_est_l = alpha*_f_est_l + (1-alpha)*_f_est_l_old;
+  _f_est_r = alpha*_f_est_r + (1-alpha)*_f_est_r_old;
+  }
+  else{first_force_comput = true;}
+  _f_est_l_old = _f_est_l;
+  _f_est_r_old = _f_est_r;
+  std::array<float, CARTESIAN_DIM> f_ee;
   std::copy(_f_est_l.data(), _f_est_l.data() + 6, f_ee.begin());      
   std::copy(_f_est_r.data(), _f_est_r.data() + 6, f_ee.begin() + 6);  
   return f_ee;
@@ -84,8 +96,22 @@ Eigen::MatrixXd H1_2_kdl::r_pinv(Eigen::MatrixXd A){
   return A.transpose() * (A * A.transpose()).inverse(); 
 }
 
+Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::VectorXd singularValues = svd.singularValues();
 
+    // Create a diagonal matrix for the inverse singular values
+    Eigen::MatrixXd S_inv = Eigen::MatrixXd::Zero(A.cols(), A.rows());
+   
+    for (int i = 0; i < singularValues.size(); ++i) {
+        if (singularValues(i) > tol) {
+            S_inv(i, i) = 1.0 / singularValues(i);
+        }
+    }
 
+    // Compute the right pseudoinverse
+    return svd.matrixV() * S_inv * svd.matrixU().transpose();
+}
 
 
 

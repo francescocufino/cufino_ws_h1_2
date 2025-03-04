@@ -26,6 +26,9 @@
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 
+#define UPPER_LIMB_JOINTS_DIM 15
+#define CARTESIAN_DIM 12
+
 
 /**
  * @class Arm_motion
@@ -85,28 +88,28 @@ class Arm_motion{
     const std::string kTopicState = "rt/lowstate";
 
     /*
-    const std::array<float, 15> kp_array = { 100, 100, 60, 35, 35, 35, 35, 
+    const std::array<float, UPPER_LIMB_JOINTS_DIM> kp_array = { 100, 100, 60, 35, 35, 35, 35, 
                                     100, 100, 60, 35, 35, 35, 35, 
                                     200 };
-    const std::array<float, 15> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
+    const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
                                     
     */                       
-    const std::array<float, 15> kp_array = { 240, 240, 160, 100, 50, 50, 50, 
+    const std::array<float, UPPER_LIMB_JOINTS_DIM> kp_array = { 240, 240, 160, 100, 50, 50, 50, 
                                     240, 240, 160, 100, 50, 50, 50, 
                                     200 };
-    const std::array<float, 15> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
+    const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
     
-    const std::array<float, 15> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
+    const std::array<float, UPPER_LIMB_JOINTS_DIM> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
                                     0.f, -0.3, 0.f, 0, 0, 0, 0,
                                     0.f};
                                     //Joints command
-    std::array<float, 15> q_cmd{};
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
 
-    const std::array<JointIndex, 15> arm_joints = {
+    const std::array<JointIndex, UPPER_LIMB_JOINTS_DIM> arm_joints = {
         JointIndex::kLeftShoulderPitch,  JointIndex::kLeftShoulderRoll,
         JointIndex::kLeftShoulderYaw,    JointIndex::kLeftElbow,
         JointIndex::kLeftWistRoll,       JointIndex::kLeftWistPitch,     JointIndex::kLeftWistYaw,       
@@ -151,7 +154,7 @@ class Arm_motion{
      * WaistYaw
      * @param t_f duration
      */
-    void move_arms_integral(std::array<float, 15> q_f, float t_f);
+    void move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f);
     /**
      * @brief Move the arms to the specified joint angles with a 5-th order polynomial planner
      * 
@@ -162,7 +165,7 @@ class Arm_motion{
      * WaistYaw
      * @param t_f duration
      */
-    void move_arms_polynomial(std::array<float, 15> q_f, float t_f);
+    void move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f);
     /**
      * @brief Stop the arms bringing them to the specific initial configuration
      */
@@ -176,7 +179,7 @@ class Arm_motion{
      * WristRoll, WristPitch, WristYaw],    
      * WaistYaw
      */
-    std::array<float, 15> get_angles();
+    std::array<float, UPPER_LIMB_JOINTS_DIM> get_angles();
             /**
      * @brief Get estimated arms torques
      * 
@@ -186,7 +189,7 @@ class Arm_motion{
      * WristRoll, WristPitch, WristYaw],    
      * WaistYaw
      */
-    std::array<float, 15> get_est_torques();
+    std::array<float, UPPER_LIMB_JOINTS_DIM> get_est_torques();
 
 
   };

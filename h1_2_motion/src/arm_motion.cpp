@@ -44,7 +44,7 @@ void Arm_motion::initialize_arms(){
 
 
   // get current joint position
-  std::array<float, 15> current_jpos{};
+  std::array<float, UPPER_LIMB_JOINTS_DIM> current_jpos{};
   //std::cout<<"Current joint position: ";
   //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
@@ -89,7 +89,7 @@ void Arm_motion::initialize_arms(){
 }
 
   
-void Arm_motion::move_arms_integral(std::array<float, 15> q_f, float t_f){
+void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f){
   if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
 
   //std::cout << "Press ENTER to start arm ctrl ..." << std::endl;
@@ -124,14 +124,14 @@ void Arm_motion::move_arms_integral(std::array<float, 15> q_f, float t_f){
   }
 }
 
-void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
+void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f){
   if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
 
   //Initial time
   float t = 0;
 
   //Initial configuration q_i
-  std::array<float, 15> q_i{};
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_i{};
   //std::cout<<"Current joint position q: ";
   //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
@@ -155,7 +155,7 @@ void Arm_motion::move_arms_polynomial(std::array<float, 15> q_f, float t_f){
   //std::cout << std::endl << std::endl;
 
   //Planning parameters
-  std::array<float, 15> a0{}, a1{}, a2{}, a3{}, a4{}, a5{};
+  std::array<float, UPPER_LIMB_JOINTS_DIM> a0{}, a1{}, a2{}, a3{}, a4{}, a5{};
   for (int j = 0; j < q_f.size(); ++j) {
     a0.at(j) = q_i.at(j);
     a1.at(j) = 0;
@@ -226,18 +226,18 @@ void Arm_motion::stop_arms(){
   }
 }
 
-std::array<float, 15> Arm_motion::get_angles(){
+std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_angles(){
   while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
-  std::array<float, 15> q{};
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q{};
   for (int i = 0; i < q.size(); ++i) {
 	  q.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();
   }
   return q;
 }
 
-std::array<float, 15> Arm_motion::get_est_torques(){
+std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_est_torques(){
   while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
-  std::array<float, 15> tau_est{};
+  std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est{};
   for (int i = 0; i < tau_est.size(); ++i) {
 	  tau_est.at(i) = state_msg->motor_state().at(arm_joints.at(i)).tau_est();
   }

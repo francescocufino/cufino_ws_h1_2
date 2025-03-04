@@ -26,6 +26,11 @@
 #include <unordered_map>
 #include <array>
 
+#define HANDS_JOINTS_DIM 12
+#define R_HAND_JOINTS_DIM 6
+#define L_HAND_JOINTS_DIM 6
+
+
 /**
  * @class Hand_motion
  * @brief A class for basic inspire hands motion.
@@ -41,7 +46,7 @@ public:
      * left [pinky, ring, middle, index, thumb_bend, thumb_rotation]
      * 
      */
-    void move_hands(std::array<float, 12>& angles);
+    void move_hands(std::array<float, HANDS_JOINTS_DIM>& angles);
     
     /**
      * @brief Get the right hand angles normalized in the range [0, 1], with 
@@ -66,7 +71,7 @@ public:
      * Joint order: right [pinky, ring, middle, index, thumb_bend, thumb_rotation],
      * left [pinky, ring, middle, index, thumb_bend, thumb_rotation]
      */
-    std::array<float, 12> get_angles();
+    std::array<float, HANDS_JOINTS_DIM> get_angles();
 
 private:
     void InitDDS_();

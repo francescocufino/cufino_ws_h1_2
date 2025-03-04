@@ -8,6 +8,7 @@
 
 
 #include <fstream>
+#include "arm_motion.h"
 
 //KDL
 
@@ -42,16 +43,20 @@ class H1_2_kdl{
     Eigen::VectorXd _tau_est_r;
     Eigen::VectorXd _f_est_l;
     Eigen::VectorXd _f_est_r;
+    Eigen::VectorXd _f_est_l_old;
+    Eigen::VectorXd _f_est_r_old;
+    bool first_force_comput = false;
     Eigen::MatrixXd r_pinv(Eigen::MatrixXd); //Right pseudoinverse
+    Eigen::MatrixXd r_pinv_svd(Eigen::MatrixXd A, double tol = 1e-6); //Right pseudoinverse svd
 
-    void update_state(std::array<float, 15> q, std::array<float, 15> tau_est);
+    void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est);
 
 
 
   public:
     H1_2_kdl();
     bool init_robot_model();
-    std::array<float, 12> compute_ee_forces(std::array<float, 15> q, std::array<float, 15> tau_est);
+    std::array<float, CARTESIAN_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
   };
 
 

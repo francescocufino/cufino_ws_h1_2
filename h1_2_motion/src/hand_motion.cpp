@@ -13,8 +13,8 @@ Hand_motion::Hand_motion(){
     this->InitDDS_();
 }
 
-void Hand_motion::move_hands(std::array<float, 12>& angles){
-    for(size_t i(0); i<12; i++){
+void Hand_motion::move_hands(std::array<float, HANDS_JOINTS_DIM>& angles){
+    for(size_t i(0); i<HANDS_JOINTS_DIM; i++){
         cmd.cmds()[i].q() = angles.at(i);
     }
     handcmd->Write(cmd);
@@ -22,28 +22,28 @@ void Hand_motion::move_hands(std::array<float, 12>& angles){
 
 }
 
-std::array<float, 6> Hand_motion::getRightQ(){
+std::array<float, R_HAND_JOINTS_DIM> Hand_motion::getRightQ(){
     std::lock_guard<std::mutex> lock(mtx);
-    std::array<float, 6> q;
-    for(size_t i(0); i<6; i++){
+    std::array<float, R_HAND_JOINTS_DIM> q;
+    for(size_t i(0); i<R_HAND_JOINTS_DIM; i++){
         q.at(i) = state.states()[i].q();
     }
     return q;
 }
 
-std::array<float, 6> Hand_motion::getLeftQ(){
+std::array<float, L_HAND_JOINTS_DIM> Hand_motion::getLeftQ(){
     std::lock_guard<std::mutex> lock(mtx);
-    std::array<float, 6> q;
-    for(size_t i(0); i<6; i++){
-        q.at(i) = state.states()[i+6].q();
+    std::array<float, L_HAND_JOINTS_DIM> q;
+    for(size_t i(0); i<L_HAND_JOINTS_DIM; i++){
+        q.at(i) = state.states()[i+R_HAND_JOINTS_DIM].q();
     }
     return q;
 }
 
-std::array<float, 12> Hand_motion::get_angles(){
-    std::array<float, 6> q_r;
-    std::array<float, 6> q_l;
-    std::array<float, 12> q;
+std::array<float, HANDS_JOINTS_DIM> Hand_motion::get_angles(){
+    std::array<float, R_HAND_JOINTS_DIM> q_r;
+    std::array<float, L_HAND_JOINTS_DIM> q_l;
+    std::array<float, HANDS_JOINTS_DIM> q;
     q_r = this->getRightQ();
     q_l = this->getLeftQ();
     std::copy(q_r.begin(), q_r.end(), q.begin());
@@ -56,14 +56,14 @@ void Hand_motion::InitDDS_(){
     handcmd = std::make_shared<unitree::robot::ChannelPublisher<unitree_go::msg::dds_::MotorCmds_>>(
         "rt/inspire/cmd");
     handcmd->InitChannel();
-    cmd.cmds().resize(12);
+    cmd.cmds().resize(HANDS_JOINTS_DIM);
     handstate = std::make_shared<unitree::robot::ChannelSubscriber<unitree_go::msg::dds_::MotorStates_>>(
         "rt/inspire/state");
     handstate->InitChannel([this](const void *message){
         std::lock_guard<std::mutex> lock(mtx);
         state = *(unitree_go::msg::dds_::MotorStates_*)message;
     });
-    state.states().resize(12);
+    state.states().resize(HANDS_JOINTS_DIM);
 }
 
 
