@@ -99,7 +99,7 @@ void Pushing::test_pushing(){
   grasped = true;
   std::cout << "Press ENTER to start walking ...";
   std::cin.get();
-  //walk(0.2, 0, 0);
+  walk(0.2, 0, 0);
   std::cout << "Press ENTER to stop walking ...";
   std::cin.get();
   stop_walk();

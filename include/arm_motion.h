@@ -27,6 +27,7 @@
 #include <unitree/robot/channel/channel_subscriber.hpp>
 
 #define UPPER_LIMB_JOINTS_DIM 15
+#define JOINTS_DIM 27
 #define CARTESIAN_DIM 12
 
 

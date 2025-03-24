@@ -50,6 +50,7 @@ class H1_2_kdl{
     Eigen::MatrixXd r_pinv_svd(Eigen::MatrixXd A, double tol = 1e-6); //Right pseudoinverse svd
 
     void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est);
+    void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
 
 
 
@@ -57,6 +58,9 @@ class H1_2_kdl{
     H1_2_kdl();
     bool init_robot_model();
     std::array<float, CARTESIAN_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
+    Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
+    Eigen::MatrixXd get_cog_jacobian(std::array<float, JOINTS_DIM> q);
+
   };
 
 

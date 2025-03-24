@@ -13,8 +13,8 @@ bool H1_2_kdl::init_robot_model(){
   if (!kdl_parser::treeFromFile("../h1_2_description/h1_2.urdf", _h1_2_tree)){
               return false;
       }
-
-	std::string base_link = "torso_link";
+  
+	std::string base_link = "pelvis";
 	//std::string tip_link_l  = "left_wrist_yaw_link";
   std::string tip_link_l  = "L_hand_base_link";
   //std::string tip_link_r  = "right_wrist_yaw_link";
@@ -27,8 +27,8 @@ bool H1_2_kdl::init_robot_model(){
 	//Resize eigen MatrixXd
   _jacobian_l.resize(_k_chain_l.getNrOfJoints());
   _jacobian_r.resize(_k_chain_r.getNrOfJoints());
-  _tau_est_r.resize(7);
-  _tau_est_l.resize(7);
+  _tau_est_r.resize(_k_chain_r.getNrOfJoints());
+  _tau_est_l.resize(_k_chain_l.getNrOfJoints());
   _f_est_l.resize(6);
   _f_est_r.resize(6);
   _f_est_l_old.resize(6);
@@ -46,14 +46,20 @@ bool H1_2_kdl::init_robot_model(){
 
 void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est){
   //Update joints and torques
-  for(int i=0; i<14; i++){
+  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     if(i<=6){
-      _q_l->data[i] = q.at(i);
-      _tau_est_l(i) = tau_est.at(i);
+      _q_l->data[i+1] = q.at(i);
+      _tau_est_l(i+1) = tau_est.at(i);
     }
-    else{
-      _q_r->data[i-7] = q.at(i);
-      _tau_est_r(i-7) = tau_est.at(i);
+    else if(i<=14){
+      _q_r->data[i+1-7] = q.at(i);
+      _tau_est_r(i+1-7) = tau_est.at(i);
+    }
+    else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
+      _q_l->data[0] = q.at(i);
+      _tau_est_l(0) = tau_est.at(i);
+      _q_r->data[0] = q.at(i);
+      _tau_est_r(0) = tau_est.at(i);
     }
   }
 
@@ -71,6 +77,44 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::arr
     _jacobian_r_eigen = _jacobian_r.data;
 }
 
+void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
+  //Update joints and torques
+  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
+    if(i<=6){
+      _q_l->data[i+1] = q.at(i);
+    }
+    else if(i<=14){
+      _q_r->data[i+1-7] = q.at(i);
+    }
+    else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
+      _q_l->data[0] = q.at(i);
+      _q_r->data[0] = q.at(i);
+    }
+  }
+
+  //Update Jacobians
+    if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
+        std::cerr << "Failed to compute left arm Jacobian!" << std::endl;
+        exit(1);
+    }
+    _jacobian_l_eigen = _jacobian_l.data;
+
+    if (_jacobian_r_solver->JntToJac(*_q_r, _jacobian_r) < 0) {
+        std::cerr << "Failed to compute right arm Jacobian!" << std::endl;
+        exit(1);
+    }
+    _jacobian_r_eigen = _jacobian_r.data;
+}
+
+Eigen::MatrixXd H1_2_kdl::get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
+  Eigen::MatrixXd J_u;
+  update_state(q);
+  //ADJUST HERE, THE FIRST ROW OF BOTH RELATES TORSO VEL
+  J_u << _jacobian_r_eigen, _jacobian_l_eigen;
+  return J_u;
+}
+
+
 std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
   //update state
   update_state(q, tau_est);
@@ -78,13 +122,13 @@ std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, U
   _f_est_l = r_pinv_svd(_jacobian_l_eigen.transpose()) * _tau_est_l;
   _f_est_r = r_pinv_svd(_jacobian_r_eigen.transpose()) * _tau_est_r;
   //filter forces (after first iteration)
-  if(first_force_comput) {
-  _f_est_l = alpha*_f_est_l + (1-alpha)*_f_est_l_old;
-  _f_est_r = alpha*_f_est_r + (1-alpha)*_f_est_r_old;
-  }
-  else{first_force_comput = true;}
-  _f_est_l_old = _f_est_l;
-  _f_est_r_old = _f_est_r;
+  // if(first_force_comput) {
+  // _f_est_l = alpha*_f_est_l + (1-alpha)*_f_est_l_old;
+  // _f_est_r = alpha*_f_est_r + (1-alpha)*_f_est_r_old;
+  // }
+  // else{first_force_comput = true;}
+  // _f_est_l_old = _f_est_l;
+  // _f_est_r_old = _f_est_r;
   std::array<float, CARTESIAN_DIM> f_ee;
   std::copy(_f_est_l.data(), _f_est_l.data() + 6, f_ee.begin());      
   std::copy(_f_est_r.data(), _f_est_r.data() + 6, f_ee.begin() + 6);  
