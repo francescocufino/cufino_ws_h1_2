@@ -27,6 +27,7 @@ bool H1_2_kdl::init_robot_model(){
 	//Resize eigen MatrixXd
   _jacobian_l.resize(_k_chain_l.getNrOfJoints());
   _jacobian_r.resize(_k_chain_r.getNrOfJoints());
+  J_cog.resize(_h1_2_tree.getNrOfJoints());
   _tau_est_r.resize(_k_chain_r.getNrOfJoints());
   _tau_est_l.resize(_k_chain_l.getNrOfJoints());
   _f_est_l.resize(6);
@@ -39,6 +40,9 @@ bool H1_2_kdl::init_robot_model(){
   _jacobian_r_solver=std::make_shared<KDL::ChainJntToJacSolver>(_k_chain_r);
   _q_l = std::make_shared<KDL::JntArray>(_k_chain_l.getNrOfJoints());
   _q_r = std::make_shared<KDL::JntArray>(_k_chain_r.getNrOfJoints());
+
+  fkSolver=std::make_shared<KDL::TreeFkSolverPos_recursive>(_h1_2_tree);
+  jacSolver=std::make_shared<KDL::TreeJntToJacSolver>(_h1_2_tree);
 
   return true;
 
@@ -87,11 +91,13 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
       _q_r->data[i+1-7] = q.at(i);
     }
     else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
+      //First element of left and right arm in this struture is the waist yaw (see if it corresponds to torso)
       _q_l->data[0] = q.at(i);
       _q_r->data[0] = q.at(i);
     }
   }
-
+  //So _q_l = [_q_w, _q_l_0, ...] _q_r = [_q_w, _q_r_0, ...]
+  //The Jacobians will be jacobian_l = [J_lw, Jl], jacobian_r = [J_rw, Jr]
   //Update Jacobians
     if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
         std::cerr << "Failed to compute left arm Jacobian!" << std::endl;
@@ -107,13 +113,78 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
 }
 
 Eigen::MatrixXd H1_2_kdl::get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
-  Eigen::MatrixXd J_u;
+  Eigen::MatrixXd J_u(4,UPPER_LIMB_JOINTS_DIM), J_l(2,7), J_lw(2,1), J_r(2,7), J_rw(2,1), zero;
   update_state(q);
-  //ADJUST HERE, THE FIRST ROW OF BOTH RELATES TORSO VEL
-  J_u << _jacobian_r_eigen, _jacobian_l_eigen;
+  //Both the Jacobian r and l contain 1st column related to torso and next 7 columns 
+  //related to the respective arm. jacobian_l = [J_lw, Jl], jacobian_r = [J_rw, Jr]
+  //We consider only the first two rows for x and y velocities
+  J_lw = _jacobian_l_eigen.block<2, 1>(0, 0);
+  J_l = _jacobian_l_eigen.block<2, 7>(0, 1);
+  J_rw = _jacobian_r_eigen.block<2, 1>(0, 0);
+  J_r = _jacobian_r_eigen.block<2, 7>(0, 1);
+  zero = Eigen::MatrixXd::Zero(2, 7);
+  //So, the upper limb Jacobian is 
+  //Ju = [J_l, 0, J_lw;
+        // 0, J_r, J_rw]
+  // considering the order of joints variable as q = [q_l; q_r; q_w]
+
+  J_u << J_l, zero, J_lw,
+        zero, J_r, J_rw;
+
   return J_u;
 }
 
+Eigen::MatrixXd H1_2_kdl::computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q_wb){
+    KDL::JntArray q;
+    q.resize(_h1_2_tree.getNrOfJoints());
+    for(int i=0; i<_h1_2_tree.getNrOfJoints(); i++){
+      q.data[i] = q_wb.at(i);
+      //SORT CORRECTLY !!!!!
+    }
+
+    J_cog.data.setZero();
+
+    // Iterate through each segment in the tree
+    double totalMass = 0.0;
+    for (const auto &[segmentName, segment] : _h1_2_tree.getSegments()) {
+        KDL::RigidBodyInertia inertia = segment.segment.getInertia();
+        double mass = inertia.getMass();
+        if (mass <= 0.0) continue; // Ignore massless links
+
+        // Get the CoG position relative to the link
+        KDL::Vector CoM = inertia.getCOG();
+
+        // Compute forward kinematics for this link
+        KDL::Frame linkFrame;
+        fkSolver->JntToCart(q, linkFrame, segmentName);
+
+        // Compute Jacobian for this segment
+        KDL::Jacobian J_link(_h1_2_tree.getNrOfJoints());
+        jacSolver->JntToJac(q, J_link, segmentName);
+
+        // Adjust Jacobian to CoG location
+        KDL::Jacobian J_cog_i = J_link;
+        for (unsigned int j = 0; j < _h1_2_tree.getNrOfJoints(); j++) {
+            KDL::Vector omega(J_link(0, j), J_link(1, j), J_link(2, j));
+            KDL::Vector linear_correction = omega * CoM;
+            J_cog_i(0, j) += linear_correction.x();
+            J_cog_i(1, j) += linear_correction.y();
+            J_cog_i(2, j) += linear_correction.z();
+        }
+
+        // Mass-weighted sum
+        J_cog.data += mass * J_cog_i.data;
+        totalMass += mass;
+    }
+
+    // Normalize by total mass
+    if (totalMass > 0.0) {
+        J_cog.data /= totalMass;
+    }
+    Eigen::MatrixXd J_cog_eigen;
+    J_cog_eigen = J_cog.data;
+    return J_cog_eigen;
+}
 
 std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
   //update state

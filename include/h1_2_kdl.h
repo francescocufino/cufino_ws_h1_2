@@ -17,6 +17,8 @@
 #include <kdl/chain.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/jacobian.hpp>
+#include <kdl/treejnttojacsolver.hpp>
+#include <kdl/treefksolverpos_recursive.hpp>
 #include <eigen3/Eigen/Dense>
 
 
@@ -33,10 +35,15 @@ class H1_2_kdl{
     KDL::Chain _k_chain_r;
     KDL::Jacobian _jacobian_l; //Left arm Jacobian matrix
     KDL::Jacobian _jacobian_r; //Right arm Jacobian matrix
+    KDL::Jacobian J_cog; //COG Jacobian matrix
     std::shared_ptr<KDL::JntArray>_q_l; //Left arm joint position
     std::shared_ptr<KDL::JntArray>_q_r; //Right arm joint position
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_r_solver; //Right Jacobian solver
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_l_solver; //Left Jacobian solver
+
+    std::shared_ptr<KDL::TreeFkSolverPos_recursive> fkSolver;
+    std::shared_ptr<KDL::TreeJntToJacSolver> jacSolver;
+
     Eigen::MatrixXd _jacobian_l_eigen;
     Eigen::MatrixXd _jacobian_r_eigen;
     Eigen::VectorXd _tau_est_l;
@@ -54,12 +61,14 @@ class H1_2_kdl{
 
 
 
+
   public:
     H1_2_kdl();
     bool init_robot_model();
     std::array<float, CARTESIAN_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
     Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
-    Eigen::MatrixXd get_cog_jacobian(std::array<float, JOINTS_DIM> q);
+    Eigen::MatrixXd computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q);
+
 
   };
 
