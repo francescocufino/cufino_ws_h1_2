@@ -53,11 +53,18 @@ class H1_2_kdl{
     Eigen::VectorXd _f_est_l_old;
     Eigen::VectorXd _f_est_r_old;
     bool first_force_comput = false;
+
+    Eigen::MatrixXd M_adm;
+    Eigen::MatrixXd D_adm;
+    Eigen::MatrixXd K_adm;
+
     Eigen::MatrixXd r_pinv(Eigen::MatrixXd); //Right pseudoinverse
     Eigen::MatrixXd r_pinv_svd(Eigen::MatrixXd A, double tol = 1e-6); //Right pseudoinverse svd
 
     void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est);
     void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
+
+
 
 
 
@@ -68,6 +75,10 @@ class H1_2_kdl{
     std::array<float, CARTESIAN_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
     Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
     Eigen::MatrixXd computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q);
+  
+    std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
+    std::array<float, CARTESIAN_DIM> admittance_control(std::array<float, CARTESIAN_DIM> x_e, std::array<float, CARTESIAN_DIM> f_ext);
+    void set_admittance_gains(Eigen::MatrixXd M_d,  Eigen::MatrixXd D_d,  Eigen::MatrixXd K_d);
 
 
   };
