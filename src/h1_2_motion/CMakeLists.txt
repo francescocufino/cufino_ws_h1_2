@@ -16,6 +16,18 @@ link_libraries(libboost_program_options.a)
 
 add_executable(hand_service src/hand_service.cpp)
 
+
+##TEST
+add_executable(kdl_test src/kdl_test.cpp src/h1_2_kdl.cpp)
+target_link_libraries(kdl_test Boost::thread Boost::system ${orocos_kdl_LIBRARIES} kdl_parser)
+target_include_directories(kdl_test PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${orocos_kdl_INCLUDE_DIRS}
+    ${kdl_parser_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+)
+##
+
 add_library(h1_2_motion STATIC
     src/arm_motion.cpp
     src/hand_motion.cpp

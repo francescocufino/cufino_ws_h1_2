@@ -9,8 +9,23 @@ H1_2_kdl::H1_2_kdl(){
 }
 
 bool H1_2_kdl::init_robot_model(){
+
+  char exe_path_c[4096];
+  ssize_t len = readlink("/proc/self/exe", exe_path_c, sizeof(exe_path_c) - 1);
+  if (len == -1) {
+      std::cerr << "Failed to get executable path" << std::endl;
+      return 1;
+  }
+  exe_path_c[len] = '\0';
+  std::filesystem::path exe_path(exe_path_c);
+
+  // Step 2: Compute URDF path relative to executable
+  std::filesystem::path urdf_path = exe_path.parent_path().parent_path().parent_path() / "src" / "h1_2_description" / "h1_2.urdf";
+  std::string urdf_path_str = urdf_path.string();
+
+  std::cout << "PATH: " << urdf_path_str;
   //Parse tree from urdf
-  if (!kdl_parser::treeFromFile("../h1_2_description/h1_2.urdf", _h1_2_tree)){
+  if (!kdl_parser::treeFromFile(urdf_path_str, _h1_2_tree)){
               return false;
       }
   
@@ -23,6 +38,18 @@ bool H1_2_kdl::init_robot_model(){
   //Create kinematic chains
 	if (!_h1_2_tree.getChain(base_link, tip_link_l, _k_chain_l) ||
     !_h1_2_tree.getChain(base_link, tip_link_r, _k_chain_r)) return false;
+
+    std::cout << "Left KDL Chain Segments:" << std::endl;
+    for (unsigned int i = 0; i < _k_chain_l.getNrOfSegments(); ++i) {
+        const KDL::Segment& segment = _k_chain_l.getSegment(i);
+        std::cout << "Segment " << i << ": " << segment.getName() << std::endl;
+    }
+
+    std::cout << "Right KDL Chain Segments:" << std::endl;
+    for (unsigned int i = 0; i < _k_chain_r.getNrOfSegments(); ++i) {
+        const KDL::Segment& segment = _k_chain_r.getSegment(i);
+        std::cout << "Segment " << i << ": " << segment.getName() << std::endl;
+    }
 
 	//Resize eigen MatrixXd
   _jacobian_l.resize(_k_chain_l.getNrOfJoints());
@@ -229,7 +256,64 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
 }
 
 
+bool H1_2_kdl::compute_ikin(std::string left_endpoint, std::array<float, SE3_dim> left_ee_pose, 
+  std::string right_endpoint, std::array<float, SE3_dim> right_ee_pose, 
+  std::array<float, JOINTS_DIM> q_init, std::array<float, JOINTS_DIM> q_min, 
+  std::array<float, JOINTS_DIM> q_max, std::array<float, JOINTS_DIM> & q_output){
 
+  // Convert to kdl poses and joints
+  KDL::Vector l_pos(left_ee_pose.at(0), left_ee_pose.at(1), left_ee_pose.at(2));
+  KDL::Rotation l_rot = KDL::Rotation::Quaternion(left_ee_pose.at(3), left_ee_pose.at(4), left_ee_pose.at(5), left_ee_pose.at(6)); //x,y,z,w
+  KDL::Frame l_pose(l_rot, l_pos);
+
+  KDL::Vector r_pos(right_ee_pose.at(0), right_ee_pose.at(1), right_ee_pose.at(2));
+  KDL::Rotation r_rot = KDL::Rotation::Quaternion(right_ee_pose.at(3), right_ee_pose.at(4), right_ee_pose.at(5), right_ee_pose.at(6)); //x,y,z,w
+  KDL::Frame r_pose(r_rot, r_pos);
+
+  KDL::JntArray q_i(JOINTS_DIM);
+  KDL::JntArray q_lb(JOINTS_DIM);
+  KDL::JntArray q_ub(JOINTS_DIM);
+  KDL::JntArray q_out(JOINTS_DIM);
+
+  for(int i=0; i<JOINTS_DIM; i++){
+    q_i.data[i]=q_init.at(i);
+    q_lb.data[i]=q_min.at(i);
+    q_ub.data[i]=q_max.at(i);
+  }
+
+  // Endpoints names
+  std::vector<std::string> endpoints = {
+    left_endpoint,
+    right_endpoint
+  };
+
+  // Setup FK and velocity IK solvers
+  KDL::TreeFkSolverPos_recursive fk_solver(_h1_2_tree);
+  KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_tree, endpoints);
+
+  // Setup position IK solver with joint limits
+  unsigned int max_iter = 100;
+  double epsilon = 1e-6;
+  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_tree, endpoints, q_lb, q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
+  
+  // Prepare map of target frames and their desired poses
+  std::map<std::string, KDL::Frame> target_poses;
+  target_poses[endpoints[0]] = l_pose;
+  target_poses[endpoints[1]] = r_pose;
+
+  // Solve IK
+  int ret = ik_solver.CartToJnt(q_i, target_poses, q_out);
+  if (ret < 0) {
+      std::cerr << "TreeIkSolverPos_NR_JL failed with error code: " << ret << std::endl;
+      return false;
+  }
+  // Fill output array
+  for(int i=0; i<JOINTS_DIM; i++){
+    q_output.at(i)=q_out.data[i];
+  }
+
+  return true;
+}
 
 
 

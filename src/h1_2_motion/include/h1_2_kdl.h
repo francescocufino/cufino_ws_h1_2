@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include "arm_motion.h"
+#include <filesystem> 
 
 //KDL
 
@@ -19,7 +20,14 @@
 #include <kdl/jacobian.hpp>
 #include <kdl/treejnttojacsolver.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
+#include "kdl/chainfksolverpos_recursive.hpp"
+#include "kdl/chainfksolvervel_recursive.hpp"
+#include <kdl/treeiksolverpos_nr_jl.hpp>
+#include <kdl/treefksolverpos_recursive.hpp>
+#include <kdl/treeiksolvervel_wdls.hpp>
 #include <eigen3/Eigen/Dense>
+
+#define SE3_dim 7 //3 position, 4 quaternion 
 
 
 
@@ -36,8 +44,8 @@ class H1_2_kdl{
     KDL::Jacobian _jacobian_l; //Left arm Jacobian matrix
     KDL::Jacobian _jacobian_r; //Right arm Jacobian matrix
     KDL::Jacobian J_cog; //COG Jacobian matrix
-    std::shared_ptr<KDL::JntArray>_q_l; //Left arm joint position
-    std::shared_ptr<KDL::JntArray>_q_r; //Right arm joint position
+    std::shared_ptr<KDL::JntArray>_q_l; //Left arm joint position (includes the waist in _q_l[0])
+    std::shared_ptr<KDL::JntArray>_q_r; //Right arm joint position (includes the waist in _q_r[0])
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_r_solver; //Right Jacobian solver
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_l_solver; //Left Jacobian solver
 
@@ -76,10 +84,13 @@ class H1_2_kdl{
     Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
     Eigen::MatrixXd computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q);
   
-    std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
+    //std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
     std::array<float, CARTESIAN_DIM> admittance_control(std::array<float, CARTESIAN_DIM> x_e, std::array<float, CARTESIAN_DIM> f_ext);
     void set_admittance_gains(Eigen::MatrixXd M_d,  Eigen::MatrixXd D_d,  Eigen::MatrixXd K_d);
-
+    bool compute_ikin(std::string left_endpoint, std::array<float, SE3_dim> left_ee_pose, 
+                        std::string right_endpoint, std::array<float, SE3_dim> right_ee_pose, 
+                        std::array<float, JOINTS_DIM> q_init, std::array<float, JOINTS_DIM> q_min, 
+                        std::array<float, JOINTS_DIM> q_max, std::array<float, JOINTS_DIM> & q_output);
 
   };
 
