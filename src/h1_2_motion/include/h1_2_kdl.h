@@ -39,6 +39,12 @@ class H1_2_kdl{
   private:
     //KDL
     KDL::Tree _h1_2_tree;
+    KDL::Tree _h1_2_upper_limb_tree;
+
+    std::string base_link = "pelvis";
+    std::string tip_link_l  = "L_hand_base_link";
+    std::string tip_link_r  = "R_hand_base_link";
+
     KDL::Chain _k_chain_l;
     KDL::Chain _k_chain_r;
     KDL::Jacobian _jacobian_l; //Left arm Jacobian matrix
@@ -72,6 +78,7 @@ class H1_2_kdl{
     void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est);
     void update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
 
+    bool extractMinimalSubTree();
 
 
 
@@ -87,10 +94,14 @@ class H1_2_kdl{
     //std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
     std::array<float, CARTESIAN_DIM> admittance_control(std::array<float, CARTESIAN_DIM> x_e, std::array<float, CARTESIAN_DIM> f_ext);
     void set_admittance_gains(Eigen::MatrixXd M_d,  Eigen::MatrixXd D_d,  Eigen::MatrixXd K_d);
-    bool compute_ikin(std::string left_endpoint, std::array<float, SE3_dim> left_ee_pose, 
-                        std::string right_endpoint, std::array<float, SE3_dim> right_ee_pose, 
-                        std::array<float, JOINTS_DIM> q_init, std::array<float, JOINTS_DIM> q_min, 
-                        std::array<float, JOINTS_DIM> q_max, std::array<float, JOINTS_DIM> & q_output);
+    bool compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose, 
+                        std::array<float, SE3_dim> right_ee_pose, 
+                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, std::array<float, UPPER_LIMB_JOINTS_DIM> q_min, 
+                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_max, std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output);
+
+    bool compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in,
+                     std::array<float, SE3_dim> & left_ee_pose,
+                     std::array<float, SE3_dim> & right_ee_pose);
 
   };
 

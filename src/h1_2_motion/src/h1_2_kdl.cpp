@@ -3,6 +3,7 @@
 H1_2_kdl::H1_2_kdl(){
   if(!init_robot_model()){std::cerr << "Failed to build robot model"; exit(1);}
   std::cout << "Tree joints and segments: " << _h1_2_tree.getNrOfJoints() << " - " << _h1_2_tree.getNrOfSegments() << std::endl;
+  std::cout << "Upper limb tree joints and segments: " << _h1_2_upper_limb_tree.getNrOfJoints() << " - " << _h1_2_upper_limb_tree.getNrOfSegments() << std::endl;
   std::cout << "Left hand chain joints and segments: " << _k_chain_l.getNrOfJoints() << " - " << _k_chain_l.getNrOfSegments() << std::endl;
   std::cout << "Right hand chain joints and segments: " << _k_chain_r.getNrOfJoints() << " - " << _k_chain_r.getNrOfSegments() << std::endl;
       
@@ -23,33 +24,30 @@ bool H1_2_kdl::init_robot_model(){
   std::filesystem::path urdf_path = exe_path.parent_path().parent_path().parent_path() / "src" / "h1_2_description" / "h1_2.urdf";
   std::string urdf_path_str = urdf_path.string();
 
-  std::cout << "PATH: " << urdf_path_str;
   //Parse tree from urdf
   if (!kdl_parser::treeFromFile(urdf_path_str, _h1_2_tree)){
               return false;
       }
-  
-	std::string base_link = "pelvis";
-	//std::string tip_link_l  = "left_wrist_yaw_link";
-  std::string tip_link_l  = "L_hand_base_link";
-  //std::string tip_link_r  = "right_wrist_yaw_link";
-  std::string tip_link_r  = "R_hand_base_link";
+
+  if(!extractMinimalSubTree())
+    return false;
+
+  //Print upper limb tree
+//   for (const auto& segment_pair : _h1_2_upper_limb_tree.getSegments()) {
+//     const std::string& segment_name = segment_pair.first;
+//     const KDL::Segment& segment = segment_pair.second.segment;
+//     const KDL::Joint& joint = segment.getJoint();
+
+//     std::cout << "Segment: " << segment_name
+//               << ", Joint: " << joint.getName()
+//               << ", Joint Type: " << joint.getTypeName() << std::endl;
+// }
+
   
   //Create kinematic chains
 	if (!_h1_2_tree.getChain(base_link, tip_link_l, _k_chain_l) ||
     !_h1_2_tree.getChain(base_link, tip_link_r, _k_chain_r)) return false;
 
-    std::cout << "Left KDL Chain Segments:" << std::endl;
-    for (unsigned int i = 0; i < _k_chain_l.getNrOfSegments(); ++i) {
-        const KDL::Segment& segment = _k_chain_l.getSegment(i);
-        std::cout << "Segment " << i << ": " << segment.getName() << std::endl;
-    }
-
-    std::cout << "Right KDL Chain Segments:" << std::endl;
-    for (unsigned int i = 0; i < _k_chain_r.getNrOfSegments(); ++i) {
-        const KDL::Segment& segment = _k_chain_r.getSegment(i);
-        std::cout << "Segment " << i << ": " << segment.getName() << std::endl;
-    }
 
 	//Resize eigen MatrixXd
   _jacobian_l.resize(_k_chain_l.getNrOfJoints());
@@ -256,10 +254,10 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
 }
 
 
-bool H1_2_kdl::compute_ikin(std::string left_endpoint, std::array<float, SE3_dim> left_ee_pose, 
-  std::string right_endpoint, std::array<float, SE3_dim> right_ee_pose, 
-  std::array<float, JOINTS_DIM> q_init, std::array<float, JOINTS_DIM> q_min, 
-  std::array<float, JOINTS_DIM> q_max, std::array<float, JOINTS_DIM> & q_output){
+bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose, 
+                                        std::array<float, SE3_dim> right_ee_pose, 
+                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, std::array<float, UPPER_LIMB_JOINTS_DIM> q_min, 
+                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_max, std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output){
 
   // Convert to kdl poses and joints
   KDL::Vector l_pos(left_ee_pose.at(0), left_ee_pose.at(1), left_ee_pose.at(2));
@@ -270,12 +268,12 @@ bool H1_2_kdl::compute_ikin(std::string left_endpoint, std::array<float, SE3_dim
   KDL::Rotation r_rot = KDL::Rotation::Quaternion(right_ee_pose.at(3), right_ee_pose.at(4), right_ee_pose.at(5), right_ee_pose.at(6)); //x,y,z,w
   KDL::Frame r_pose(r_rot, r_pos);
 
-  KDL::JntArray q_i(JOINTS_DIM);
-  KDL::JntArray q_lb(JOINTS_DIM);
-  KDL::JntArray q_ub(JOINTS_DIM);
-  KDL::JntArray q_out(JOINTS_DIM);
+  KDL::JntArray q_i(UPPER_LIMB_JOINTS_DIM);
+  KDL::JntArray q_lb(UPPER_LIMB_JOINTS_DIM);
+  KDL::JntArray q_ub(UPPER_LIMB_JOINTS_DIM);
+  KDL::JntArray q_out(UPPER_LIMB_JOINTS_DIM);
 
-  for(int i=0; i<JOINTS_DIM; i++){
+  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     q_i.data[i]=q_init.at(i);
     q_lb.data[i]=q_min.at(i);
     q_ub.data[i]=q_max.at(i);
@@ -283,18 +281,18 @@ bool H1_2_kdl::compute_ikin(std::string left_endpoint, std::array<float, SE3_dim
 
   // Endpoints names
   std::vector<std::string> endpoints = {
-    left_endpoint,
-    right_endpoint
+    tip_link_l,
+    tip_link_r
   };
 
   // Setup FK and velocity IK solvers
-  KDL::TreeFkSolverPos_recursive fk_solver(_h1_2_tree);
-  KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_tree, endpoints);
+  KDL::TreeFkSolverPos_recursive fk_solver(_h1_2_upper_limb_tree);
+  KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_upper_limb_tree, endpoints);
 
   // Setup position IK solver with joint limits
   unsigned int max_iter = 100;
   double epsilon = 1e-6;
-  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_tree, endpoints, q_lb, q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
+  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_upper_limb_tree, endpoints, q_lb, q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
   
   // Prepare map of target frames and their desired poses
   std::map<std::string, KDL::Frame> target_poses;
@@ -308,13 +306,99 @@ bool H1_2_kdl::compute_ikin(std::string left_endpoint, std::array<float, SE3_dim
       return false;
   }
   // Fill output array
-  for(int i=0; i<JOINTS_DIM; i++){
+  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     q_output.at(i)=q_out.data[i];
   }
 
   return true;
 }
 
+bool H1_2_kdl::compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in,
+                           std::array<float, SE3_dim> & left_ee_pose,
+                           std::array<float, SE3_dim> & right_ee_pose){
+
+
+  //Convert to KDL
+  KDL::JntArray q_i(UPPER_LIMB_JOINTS_DIM);
+  
+  KDL::Frame r_pose;
+  KDL::Frame l_pose;
+
+  //Setup fk solver
+  KDL::TreeFkSolverPos_recursive fk_solver(_h1_2_upper_limb_tree);  
+
+  //Solve fk
+  if(fk_solver.JntToCart(q_i, l_pose, tip_link_l) < 0 || fk_solver.JntToCart(q_i, r_pose, tip_link_r) < 0){
+    std::cerr << "TreeFkSolverPos_recursive failed" << std::endl;
+    return false;
+  }
+
+  //Fill output
+  double l_quat[4], r_quat[4];
+  l_pose.M.GetQuaternion(l_quat[0], l_quat[1], l_quat[2], l_quat[3]);
+  r_pose.M.GetQuaternion(r_quat[0], r_quat[1], r_quat[2], r_quat[3]);
+
+  for (int i=0; i<SE3_dim; i++){
+    if(i<3){
+      left_ee_pose.at(i) = l_pose.p.data[i];
+      right_ee_pose.at(i) = r_pose.p.data[i];
+    }
+    else{
+      left_ee_pose.at(i) = l_quat[i-3];
+      right_ee_pose.at(i) = r_quat[i-3];
+    }
+  }
+  return true;
+
+}
+
+
+bool H1_2_kdl::extractMinimalSubTree(){
+
+  KDL::Chain chain1, chain2;
+
+  // Extract chains
+  if (!_h1_2_tree.getChain(base_link, tip_link_l, chain1)) {
+  std::cerr << "Failed to extract chain to " << tip_link_l << "\n";
+  return false;
+  }
+
+  if (!_h1_2_tree.getChain(base_link, tip_link_r, chain2)) {
+  std::cerr << "Failed to extract chain to " << tip_link_r << "\n";
+  return false;
+  }
+
+  // Initialize the output tree with the base link
+  _h1_2_upper_limb_tree = KDL::Tree(base_link);
+  std::set<std::string> added_links;
+  added_links.insert(base_link);
+
+  // Helper to add a chain to the tree
+  auto add_chain = [&](const KDL::Chain& chain, const std::string& root_link) -> bool {
+    std::string parent_link = root_link;
+
+    for (unsigned int i = 0; i < chain.getNrOfSegments(); ++i) {
+      const KDL::Segment& seg = chain.getSegment(i);
+      std::string child_link = seg.getName();  // Segment name is usually the child link name
+
+      if (added_links.find(child_link) == added_links.end()) {
+        if (!_h1_2_upper_limb_tree.addSegment(seg, parent_link)) {
+          std::cerr << "Failed to add segment " << child_link << " to parent " << parent_link << "\n";
+          return false;
+        }
+        added_links.insert(child_link);
+      }
+
+      parent_link = child_link;
+    }
+    return true;
+  };
+
+  if (!add_chain(chain1, base_link)) return false;
+  if (!add_chain(chain2, base_link)) return false;
+
+  return true;
+}
 
 
 
