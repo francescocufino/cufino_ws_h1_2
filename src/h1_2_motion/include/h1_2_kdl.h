@@ -44,6 +44,7 @@ class H1_2_kdl{
     std::string base_link = "pelvis";
     std::string tip_link_l  = "L_hand_base_link";
     std::string tip_link_r  = "R_hand_base_link";
+    std::vector<std::string> _upper_limb_joint_names;
 
     KDL::Chain _k_chain_l;
     KDL::Chain _k_chain_r;
@@ -80,9 +81,10 @@ class H1_2_kdl{
 
     bool extractMinimalSubTree();
 
-
-
-
+    /*
+    void extract_joint_names_from_tree();
+    void extract_joint_names_recursive(const KDL::TreeElement& segment);
+    */
 
   public:
     H1_2_kdl();
