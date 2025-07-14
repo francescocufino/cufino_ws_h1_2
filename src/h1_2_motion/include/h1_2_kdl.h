@@ -8,8 +8,12 @@
 
 
 #include <fstream>
-#include "arm_motion.h"
 #include <filesystem> 
+#include <array>
+#include <iostream>
+#include <unistd.h>
+#include <string>
+#include <set>
 
 //KDL
 
@@ -27,13 +31,17 @@
 #include <kdl/treeiksolvervel_wdls.hpp>
 #include <eigen3/Eigen/Dense>
 
-#define SE3_dim 7 //3 position, 4 quaternion 
+#define WRENCH_DIM 12
+#define UPPER_LIMB_JOINTS_DIM 15
+#define CARTESIAN_DIM 7
+#define JOINTS_DIM 27
+
 
 
 
 /**
  * @class H1_2_kdl
- * @brief A class for H1_2_kdl exploiting locomotion, arm motion, hand motion.
+ * @brief A class for H1_2 kinematics and dynamics, using KDL.
  */ 
 class H1_2_kdl{
   private:
@@ -53,6 +61,8 @@ class H1_2_kdl{
     KDL::Jacobian J_cog; //COG Jacobian matrix
     std::shared_ptr<KDL::JntArray>_q_l; //Left arm joint position (includes the waist in _q_l[0])
     std::shared_ptr<KDL::JntArray>_q_r; //Right arm joint position (includes the waist in _q_r[0])
+    std::shared_ptr<KDL::JntArray> _q_lb; //Upper limb joints lower bounds
+    std::shared_ptr<KDL::JntArray> _q_ub; //Upper limb joints upper bounds
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_r_solver; //Right Jacobian solver
     std::shared_ptr<KDL::ChainJntToJacSolver> _jacobian_l_solver; //Left Jacobian solver
 
@@ -89,21 +99,60 @@ class H1_2_kdl{
   public:
     H1_2_kdl();
     bool init_robot_model();
-    std::array<float, CARTESIAN_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
+    std::array<float, WRENCH_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
     Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
     Eigen::MatrixXd computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q);
   
     //std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
     std::array<float, CARTESIAN_DIM> admittance_control(std::array<float, CARTESIAN_DIM> x_e, std::array<float, CARTESIAN_DIM> f_ext);
     void set_admittance_gains(Eigen::MatrixXd M_d,  Eigen::MatrixXd D_d,  Eigen::MatrixXd K_d);
-    bool compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose, 
-                        std::array<float, SE3_dim> right_ee_pose, 
-                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, std::array<float, UPPER_LIMB_JOINTS_DIM> q_min, 
-                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_max, std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output);
 
+    /**
+     * @brief Performs the upper limb inverse kinematics
+     * 
+     * @param left_ee_pose Left end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param right_ee_pose Right end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param q_init Initial joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw  
+     * @param q_output Output joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw   
+     */
+    bool compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> left_ee_pose, 
+                        std::array<float, CARTESIAN_DIM> right_ee_pose, 
+                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, 
+                        std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output);
+
+    bool compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+          std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
+          std::array<float, 6> target_left_ee_twist, 
+          std::array<float, 6> target_right_ee_twist,
+          std::array<float, UPPER_LIMB_JOINTS_DIM> q_feedback, 
+          std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output);
+
+    /**
+     * @brief Performs the upper limb forward kinematics
+     * 
+     * @param q_in Input joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw  
+     * @param left_ee_pose Output left end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param right_ee_pose Output right end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     */
     bool compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in,
-                     std::array<float, SE3_dim> & left_ee_pose,
-                     std::array<float, SE3_dim> & right_ee_pose);
+                     std::array<float, CARTESIAN_DIM> & left_ee_pose,
+                     std::array<float, CARTESIAN_DIM> & right_ee_pose);
 
   };
 

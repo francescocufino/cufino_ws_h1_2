@@ -47,12 +47,12 @@ class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
     //Data storage
     std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM+1>> torques;
     std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM+1>> positions;
-    std::vector<std::array<float, CARTESIAN_DIM+1>> wrench;
+    std::vector<std::array<float, WRENCH_DIM+1>> wrench;
 
 
   public:
     Pushing();
-    std::array<float, CARTESIAN_DIM> get_est_forces();
+    std::array<float, WRENCH_DIM> get_est_forces();
     void test_pushing();
     void test_force_est();
     void test_COM_motion();
@@ -60,7 +60,7 @@ class Pushing : public Locomotion, public Arm_motion, public Hand_motion{
 
     //stream data UDP
     int create_UDP_socket();
-    bool send_wrenches_UDP(std::array<float, CARTESIAN_DIM> f_est);
+    bool send_wrenches_UDP(std::array<float, WRENCH_DIM> f_est);
     
     //Save data to csv
     void store_data();
@@ -72,7 +72,7 @@ Pushing::Pushing(){
   
 }
 
-std::array<float, CARTESIAN_DIM> Pushing::get_est_forces(){
+std::array<float, WRENCH_DIM> Pushing::get_est_forces(){
   return h1_2.compute_ee_forces(Arm_motion::get_angles(), Arm_motion::get_est_torques(), 0.1);
 }
 
@@ -138,7 +138,7 @@ int Pushing::create_UDP_socket(){
 
 }
 
-bool Pushing::send_wrenches_UDP(std::array<float, CARTESIAN_DIM> f_est){
+bool Pushing::send_wrenches_UDP(std::array<float, WRENCH_DIM> f_est){
     // Format data as JSON
     std::ostringstream dataStream;
     dataStream << "{"
@@ -161,7 +161,7 @@ bool Pushing::send_wrenches_UDP(std::array<float, CARTESIAN_DIM> f_est){
 }
 
 void Pushing::test_force_est(){
-  std::array<float, CARTESIAN_DIM> f_est = {0,0,0,0,0,0,0,0,0,0,0,0};
+  std::array<float, WRENCH_DIM> f_est = {0,0,0,0,0,0,0,0,0,0,0,0};
   std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_force_test = {0.060183, 0.0551721, 0.000710487, 1.18461, 0.0328448, 0.0337567, -0.0323732,
                                             0.0184591, -0.000766754, -0.0243986, -0.0613762, -0.064399, 0.0569582, -0.0392926,
                                             -0.00184074};
@@ -203,7 +203,7 @@ void Pushing::store_data(){
 
   std::array<float, UPPER_LIMB_JOINTS_DIM> arr_torques; std::array<float, UPPER_LIMB_JOINTS_DIM+1> arr_torques_t;
   std::array<float, UPPER_LIMB_JOINTS_DIM> arr_positions; std::array<float, UPPER_LIMB_JOINTS_DIM+1> arr_positions_t;
-  std::array<float, CARTESIAN_DIM> arr_wrench; std::array<float, CARTESIAN_DIM+1> arr_wrench_t; 
+  std::array<float, WRENCH_DIM> arr_wrench; std::array<float, WRENCH_DIM+1> arr_wrench_t; 
 
   
 
@@ -214,7 +214,7 @@ void Pushing::store_data(){
     arr_wrench = h1_2.compute_ee_forces(arr_positions, arr_torques, 0.1);
     std::copy(arr_positions.begin(), arr_positions.end(), arr_positions_t.begin()); arr_positions_t.at(UPPER_LIMB_JOINTS_DIM) = time;   
     std::copy(arr_torques.begin(), arr_torques.end(), arr_torques_t.begin()); arr_torques_t.at(UPPER_LIMB_JOINTS_DIM) = time;  
-    std::copy(arr_wrench.begin(), arr_wrench.end(), arr_wrench_t.begin()); arr_wrench_t.at(CARTESIAN_DIM) = time;  
+    std::copy(arr_wrench.begin(), arr_wrench.end(), arr_wrench_t.begin()); arr_wrench_t.at(WRENCH_DIM) = time;  
    
     //push back the data with time
     positions.push_back(arr_positions_t);

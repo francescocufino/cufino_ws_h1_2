@@ -26,9 +26,9 @@
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 
-#define UPPER_LIMB_JOINTS_DIM 15
-#define JOINTS_DIM 27
-#define CARTESIAN_DIM 12
+//Kinematics and dynamics
+#include "h1_2_kdl.h"
+
 
 
 /**
@@ -130,6 +130,9 @@ class Arm_motion{
     float max_joint_delta = max_joint_velocity * control_dt;
     std::chrono::duration<int64_t, std::milli> sleep_time = std::chrono::milliseconds(static_cast<int>(control_dt / 0.001f));
 
+    //Kinematics and dynamics
+    H1_2_kdl h1_2_kdl;
+
   
     //Publisher, subscriber and msg for low level (arms)
     unitree::robot::ChannelPublisherPtr<unitree_hg::msg::dds_::LowCmd_> arm_sdk_publisher;
@@ -141,10 +144,12 @@ class Arm_motion{
 
   public:
     Arm_motion();
+
     /**
      * @brief Initialize the arms bringing them to a specific initial configuration
      */
     void initialize_arms();
+
     /**
      * @brief Move the arms to the specified joint angles with an integral planner
      * 
@@ -156,6 +161,7 @@ class Arm_motion{
      * @param t_f duration
      */
     void move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f);
+
     /**
      * @brief Move the arms to the specified joint angles with a 5-th order polynomial planner
      * 
@@ -167,6 +173,29 @@ class Arm_motion{
      * @param t_f duration
      */
     void move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f);
+
+    /**
+     * @brief Sets instantaneously the upper limb joints to the specified joint angles
+     * 
+     * @param q_f Target configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],      
+     * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * WristRoll, WristPitch, WristYaw],    
+     * WaistYaw
+     */
+    void set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd);
+
+    /**
+     * @brief Sets instantaneously the end-effectors poses, performing inverse kinematics
+     * 
+     * @param left_ee_pose Left end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param right_ee_pose Right end-effector configuration. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     */
+    void set_end_effector_poses(std::array<float, CARTESIAN_DIM> left_ee_pose, 
+                                std::array<float, CARTESIAN_DIM> right_ee_pose);
+
     /**
      * @brief Stop the arms bringing them to the specific initial configuration
      */

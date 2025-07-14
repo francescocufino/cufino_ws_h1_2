@@ -203,6 +203,39 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 
 }
 
+void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
+  //Set the command equal to the target
+  q_cmd = q_target;
+  for (int j = 0; j < q_cmd.size(); ++j) {
+    msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
+    msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+    msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+  }
+  // send dds msg
+  arm_sdk_publisher->Write(*msg);
+}
+
+void Arm_motion::set_end_effector_poses(std::array<float, CARTESIAN_DIM> left_ee_pose, 
+                                        std::array<float, CARTESIAN_DIM> right_ee_pose){
+
+    //Get actual angles
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
+
+    //Perform inverse kinematics to obtain joints commands
+    if(h1_2_kdl.compute_upper_limb_ikin(left_ee_pose, right_ee_pose, q_in, q_cmd)>=0){
+      //Command
+      set_upper_limb_joints(q_cmd);
+    }
+    else{
+      set_upper_limb_joints(q_in);
+      std::cerr << "Failed ikin\n";
+      exit(1);
+    }
+
+  }
+
+
+
 void Arm_motion::stop_arms(){
   std::cout << "Stopping arm ctrl: returning to initial position ...\n";
   move_arms_polynomial(init_pos, 2);

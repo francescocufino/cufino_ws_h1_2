@@ -71,6 +71,43 @@ bool H1_2_kdl::init_robot_model(){
   _jacobian_r_solver=std::make_shared<KDL::ChainJntToJacSolver>(_k_chain_r);
   _q_l = std::make_shared<KDL::JntArray>(_k_chain_l.getNrOfJoints());
   _q_r = std::make_shared<KDL::JntArray>(_k_chain_r.getNrOfJoints());
+  _q_lb = std::make_shared<KDL::JntArray>(UPPER_LIMB_JOINTS_DIM);
+  _q_ub = std::make_shared<KDL::JntArray>(UPPER_LIMB_JOINTS_DIM);
+
+
+  // Joints limits (hard-coded)
+  _q_lb->data[1] = -3.14f;    // kLeftShoulderPitch
+  _q_lb->data[2] = -0.38f;    // kLeftShoulderRoll
+  _q_lb->data[3] = -2.66f;    // kLeftShoulderYaw
+  _q_lb->data[4] = -0.95f;    // kLeftElbow
+  _q_lb->data[5] = -3.01f;    // kLeftWistRoll
+  _q_lb->data[6] = -0.4625f;  // kLeftWistPitch
+  _q_lb->data[7] = -1.27f;    // kLeftWistYaw
+  _q_lb->data[8] = -3.14f;    // kRightShoulderPitch
+  _q_lb->data[9] = -3.4f;     // kRightShoulderRoll
+  _q_lb->data[10] = -3.01f;    // kRightShoulderYaw
+  _q_lb->data[11] = -0.95f;    // kRightElbow
+  _q_lb->data[12] = -2.75f;    // kRightWistRoll
+  _q_lb->data[13] = -0.4625f;  // kRightWistPitch
+  _q_lb->data[14] = -1.27f;    // kRightWistYaw
+  _q_lb->data[0] =-2.35f;     // kWaistYaw
+
+  _q_ub->data[1] =  1.57f;     // kLeftShoulderPitch
+  _q_ub->data[2] =  3.4f;      // kLeftShoulderRoll
+  _q_ub->data[3] =  3.01f;     // kLeftShoulderYaw
+  _q_ub->data[4] =  3.18f;     // kLeftElbow
+  _q_ub->data[5] =  2.75f;     // kLeftWistRoll
+  _q_ub->data[6] =  0.4625f;   // kLeftWistPitch
+  _q_ub->data[7] =  1.27f;     // kLeftWistYaw
+  _q_ub->data[8] =  1.57f;     // kRightShoulderPitch
+  _q_ub->data[9] =  0.38f;     // kRightShoulderRoll
+  _q_ub->data[10] =  2.66f;     // kRightShoulderYaw
+  _q_ub->data[11] =  3.18f;     // kRightElbow
+  _q_ub->data[12] =  3.01f;     // kRightWistRoll
+  _q_ub->data[13] =  0.4625f;   // kRightWistPitch
+  _q_ub->data[14] =  1.27f;     // kRightWistYaw
+  _q_ub->data[0] =  2.35f;      // kWaistYaw
+
 
   fkSolver=std::make_shared<KDL::TreeFkSolverPos_recursive>(_h1_2_tree);
   jacSolver=std::make_shared<KDL::TreeJntToJacSolver>(_h1_2_tree);
@@ -217,7 +254,7 @@ Eigen::MatrixXd H1_2_kdl::computeWholeBodyCoGJacobianHumanoid(std::array<float, 
     return J_cog_eigen;
 }
 
-std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
+std::array<float, WRENCH_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
   //update state
   update_state(q, tau_est);
   //transform torques in forces at ee
@@ -231,7 +268,7 @@ std::array<float, CARTESIAN_DIM> H1_2_kdl::compute_ee_forces(std::array<float, U
   // else{first_force_comput = true;}
   // _f_est_l_old = _f_est_l;
   // _f_est_r_old = _f_est_r;
-  std::array<float, CARTESIAN_DIM> f_ee;
+  std::array<float, WRENCH_DIM> f_ee;
   std::copy(_f_est_l.data(), _f_est_l.data() + 6, f_ee.begin());      
   std::copy(_f_est_r.data(), _f_est_r.data() + 6, f_ee.begin() + 6);  
   return f_ee;
@@ -260,10 +297,12 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
 }
 
 
-bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose, 
-                                        std::array<float, SE3_dim> right_ee_pose, 
-                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, std::array<float, UPPER_LIMB_JOINTS_DIM> q_min, 
-                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_max, std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output){
+bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> left_ee_pose, 
+                                        std::array<float, CARTESIAN_DIM> right_ee_pose, 
+                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, 
+                                        std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output){
+
+//DOES NOT WORK
 
   // Convert to kdl poses and joints
   KDL::Vector l_pos(left_ee_pose.at(0), left_ee_pose.at(1), left_ee_pose.at(2));
@@ -275,8 +314,6 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose,
   KDL::Frame r_pose(r_rot, r_pos);
 
   KDL::JntArray q_i(UPPER_LIMB_JOINTS_DIM);
-  KDL::JntArray q_lb(UPPER_LIMB_JOINTS_DIM);
-  KDL::JntArray q_ub(UPPER_LIMB_JOINTS_DIM);
   KDL::JntArray q_out(UPPER_LIMB_JOINTS_DIM);
 
   std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
@@ -299,8 +336,6 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose,
 
   for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
     q_i(i) = q_init[remap[i]];
-    q_lb(i) = q_min[remap[i]];
-    q_ub(i) = q_max[remap[i]];
   }
 
 
@@ -315,14 +350,55 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose,
   KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_upper_limb_tree, endpoints);
 
   // Setup position IK solver with joint limits
-  unsigned int max_iter = 100;
-  double epsilon = 1e-3;
-  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_upper_limb_tree, endpoints, q_lb, q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
+  unsigned int max_iter = 1000;
+  double epsilon = 1e-6;
+
+  
+  
+  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_upper_limb_tree, endpoints, *_q_lb, *_q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
   
   // Prepare map of target frames and their desired poses
   std::map<std::string, KDL::Frame> target_poses;
   target_poses[endpoints[0]] = l_pose;
   target_poses[endpoints[1]] = r_pose;
+
+  std::cout << "=== IK Debug Info ===\n";
+  std::cout << "Max iterations: " << max_iter << "\n";
+  std::cout << "Epsilon: " << epsilon << "\n";
+
+  // Print endpoints
+  std::cout << "Endpoints:\n";
+  for (const auto& e : endpoints) {
+      std::cout << "  - " << e << "\n";
+  }
+
+  // Print joint limits (lower and upper bounds)
+  std::cout << "Joint limits:\n";
+  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+      std::cout << "  q_lb[" << i << "] = " << (*_q_lb)(i)
+                << ", q_ub[" << i << "] = " << (*_q_ub)(i) << "\n";
+  }
+
+  // Initial joint guess
+  std::cout << "Initial joint configuration (q_i):\n";
+  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+      std::cout << "  q_i[" << i << "] = " << q_i(i) << "\n";
+  }
+
+  // Target poses
+  std::cout << "Target poses:\n";
+  for (const auto& [name, frame] : target_poses) {
+      double x, y, z;
+      x = frame.p.x();
+      y = frame.p.y();
+      z = frame.p.z();
+      double qx, qy, qz, qw;
+      frame.M.GetQuaternion(qx, qy, qz, qw);
+      std::cout << "  Pose for " << name << ":\n";
+      std::cout << "    Position: [" << x << ", " << y << ", " << z << "]\n";
+      std::cout << "    Orientation (quat): [" << qx << ", " << qy << ", " << qz << ", " << qw << "]\n";
+  }
+
 
   // Solve IK
   int ret = ik_solver.CartToJnt(q_i, target_poses, q_out);
@@ -330,6 +406,11 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose,
       std::cerr << "TreeIkSolverPos_NR_JL failed with error code: " << ret << std::endl;
       return false;
   }
+  std::cout << "IK Output Joints (q_out):\n";
+  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+      std::cout << "  q_out[" << i << "] = " << q_out(i) << "\n";
+  }
+  
   // Fill output array
   for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     q_output[remap[i]]=q_out(i);
@@ -338,9 +419,62 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, SE3_dim> left_ee_pose,
   return true;
 }
 
+
+
+
+
+
+
+
+
+bool H1_2_kdl::compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+  std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
+  std::array<float, 6> target_left_ee_twist, 
+  std::array<float, 6> target_right_ee_twist,
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_feedback, 
+  std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output){
+
+    //Implement 3.92 of Siciliano's book, but instead of J^{-1} use KDL::TreeIkSolverVel_wdls
+
+
+
+    //Convert to KDL
+
+    //Compute position and orientation error
+
+    //Compute the twist in 3.92 v_in = [p_dot_d + K_p e_p; omega_d + K_o e_o]
+
+    //Compute joint velocity with damped least square Jacobian
+    //using CartToJnt(const KDL::JntArray &q_in, const KDL::Twists &v_in, KDL::JntArray &qdot_out)
+
+    //Return qdot_out
+
+    //Call this function in a loop and integrate qdot outside this function. Then, at next iteration, provide
+    //the q feedback
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool H1_2_kdl::compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in,
-                           std::array<float, SE3_dim> & left_ee_pose,
-                           std::array<float, SE3_dim> & right_ee_pose){
+                           std::array<float, CARTESIAN_DIM> & left_ee_pose,
+                           std::array<float, CARTESIAN_DIM> & right_ee_pose){
 
                             
 
@@ -370,9 +504,6 @@ bool H1_2_kdl::compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_
   for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
     q_i(i) = q_in[remap[i]];
   }
-  std::cout << "fk, q_i:\n";
-  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i)
-    std::cout << q_i(i) << ' ';
   
   KDL::Frame r_pose;
   KDL::Frame l_pose;
@@ -391,7 +522,7 @@ bool H1_2_kdl::compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_
   l_pose.M.GetQuaternion(l_quat[0], l_quat[1], l_quat[2], l_quat[3]);
   r_pose.M.GetQuaternion(r_quat[0], r_quat[1], r_quat[2], r_quat[3]);
 
-  for (int i=0; i<SE3_dim; i++){
+  for (int i=0; i<CARTESIAN_DIM; i++){
     if(i<3){
       left_ee_pose.at(i) = l_pose.p.data[i];
       right_ee_pose.at(i) = r_pose.p.data[i];
