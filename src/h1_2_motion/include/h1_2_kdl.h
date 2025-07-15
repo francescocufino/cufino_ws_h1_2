@@ -110,27 +110,32 @@ class H1_2_kdl{
     /**
      * @brief Performs the upper limb inverse kinematics
      * 
-     * @param left_ee_pose Left end-effector configuration. Coordinates order: 
+     * @param target_left_ee_pose Left end-effector target pose. Coordinates order: 
      * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
-     * @param right_ee_pose Right end-effector configuration. Coordinates order: 
+     * @param target_right_ee_pose Right end-effector target pose. Coordinates order: 
      * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
-     * @param q_init Initial joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * @param target_left_ee_twist Left end-effector target twist. Coordinates order: 
+     * [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ]
+     * @param target_right_ee_twist Right end-effector target twist. Coordinates order: 
+     * [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ]
+     * @param q_feedback Actual joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
      * WristRoll, WristPitch, WristYaw],      
      * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
      * WristRoll, WristPitch, WristYaw],    
      * WaistYaw  
-     * @param q_output Output joint configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
+     * @param q_dot_output Output joint velocity commands. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
      * WristRoll, WristPitch, WristYaw],      
      * right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 
      * WristRoll, WristPitch, WristYaw],    
-     * WaistYaw   
+     * WaistYaw  
+     * @param k_p Position error proportional gain. As order of magnitude, a good
+     * choice can be 1/dt, with dt sample time
+     * @param k_p Orientation error proportional gain. As order of magnitude, a good
+     * choice can be 1/dt, with dt sample time  
+     * @param lambda Damping factor
      */
-    bool compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> left_ee_pose, 
-                        std::array<float, CARTESIAN_DIM> right_ee_pose, 
-                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, 
-                        std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output);
 
-    bool compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+    bool compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
           std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
           std::array<float, 6> target_left_ee_twist, 
           std::array<float, 6> target_right_ee_twist,

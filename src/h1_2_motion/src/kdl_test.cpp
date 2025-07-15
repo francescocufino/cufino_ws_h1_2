@@ -78,7 +78,7 @@ int main (){
         l_pose_target.at(0) = l_pose_target.at(0) + delta; //Increase of 0.0001m at each iteration.
 
         l_pose_target.at(2) = l_pose_target.at(2) + delta; //Increase of 0.0001m at each iteration.
-        h1_2.compute_upper_limb_ikin_clik(l_pose_target, r_pose_target, l_twist, 
+        h1_2.compute_upper_limb_ikin(l_pose_target, r_pose_target, l_twist, 
                                             r_twist, q_in, q_dot_out,
                                             100, 100, 1e-3);
         for(int i=0; i<q_dot_out.size(); i++)

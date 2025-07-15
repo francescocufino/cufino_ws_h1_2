@@ -68,13 +68,10 @@ void Arm_motion::initialize_arms(){
     // set control joints
     for (int j = 0; j < init_pos.size(); ++j) {
       q_cmd.at(j) = init_pos.at(j) * phase + current_jpos.at(j) * (1 - phase);
-      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
     }
+    if(!initialized_q_cmd){initialized_q_cmd = true;}
 
-    // send dds msg
-    arm_sdk_publisher->Write(*msg);
+    set_upper_limb_joints(q_cmd);
 
     // sleep
     std::this_thread::sleep_for(sleep_time);
@@ -106,18 +103,8 @@ void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f
           std::clamp(q_f.at(j) - q_cmd.at(j),
                      -max_joint_delta, max_joint_delta);
     }
-
-    // set control joints
-    for (int j = 0; j < q_f.size(); ++j) {
-      //std::cout << "q" << j << ": " << current_jpos_des.at(j) << ' ';
-      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
-    }
-    //std::cout << std::endl;
-
-    // send dds msg
-    arm_sdk_publisher->Write(*msg);
+    if(!initialized_q_cmd){initialized_q_cmd = true;}
+    set_upper_limb_joints(q_cmd);
 
     // sleep
     std::this_thread::sleep_for(sleep_time);
@@ -177,15 +164,10 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
     //Commanding joints
     for (int j = 0; j < q_cmd.size(); ++j) {
       q_cmd.at(j) =a5.at(j)*pow(t,5) + a4.at(j)*pow(t,4) + a3.at(j)*pow(t,3) + a2.at(j)*pow(t,2)+ a1.at(j)*t + a0.at(j);
-      //std::cout << "q" << j << ": " << q_cmd.at(j) << ' ';
-      msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
-      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
     }
-    //std::cout << std::endl;
 
-    // send dds msg
-    arm_sdk_publisher->Write(*msg);
+    if(!initialized_q_cmd){initialized_q_cmd = true;}
+    set_upper_limb_joints(q_cmd);
 
     // sleep
     std::this_thread::sleep_for(sleep_time);
@@ -204,10 +186,10 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 }
 
 void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
+  
   //Set the command equal to the target
-  q_cmd = q_target;
-  for (int j = 0; j < q_cmd.size(); ++j) {
-    msg->motor_cmd().at(arm_joints.at(j)).q(q_cmd.at(j));
+  for (int j = 0; j < q_target.size(); ++j) {
+    msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
     msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
     msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
   }
@@ -215,24 +197,43 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
   arm_sdk_publisher->Write(*msg);
 }
 
-void Arm_motion::set_end_effector_poses(std::array<float, CARTESIAN_DIM> left_ee_pose, 
-                                        std::array<float, CARTESIAN_DIM> right_ee_pose){
+bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+                                          std::array<float, CARTESIAN_DIM> target_right_ee_pose,
+                                          std::array<float, 6> target_left_ee_twist,
+                                          std::array<float, 6> target_right_ee_twist,
+                                          float dt){
 
-    //Get actual angles
-    std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
+  //Get actual angles
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
 
-    //Perform inverse kinematics to obtain joints commands
-    if(h1_2_kdl.compute_upper_limb_ikin(left_ee_pose, right_ee_pose, q_in, q_cmd)>=0){
-      //Command
-      set_upper_limb_joints(q_cmd);
-    }
-    else{
-      set_upper_limb_joints(q_in);
-      std::cerr << "Failed ikin\n";
-      exit(1);
-    }
-
+  //Initialize q_cmd
+  if(!initialized_q_cmd){
+    q_cmd = q_in;
+    initialized_q_cmd = true;
   }
+
+  //Perform inverse kinematics to obtain joints commands
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_dot_out{};
+  bool ikin_res = h1_2_kdl.compute_upper_limb_ikin(target_left_ee_pose, target_right_ee_pose, 
+                                                    target_left_ee_twist, target_right_ee_twist, 
+                                                    q_in, q_dot_out,
+                                                    100, 100, 1e-3);
+
+  if(ikin_res){
+    //Command
+    for(int i=0; i<q_dot_out.size(); i++)
+      q_cmd.at(i) = q_cmd.at(i) + dt*q_dot_out.at(i);
+      
+    // Set also dq????
+    set_upper_limb_joints(q_cmd);
+  }
+  else{
+    set_upper_limb_joints(q_in);
+    std::cerr << "Failed ikin\n";
+    exit(1);
+  }
+
+}
 
 
 

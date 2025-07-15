@@ -297,130 +297,7 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
 }
 
 
-bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> left_ee_pose, 
-                                        std::array<float, CARTESIAN_DIM> right_ee_pose, 
-                                        std::array<float, UPPER_LIMB_JOINTS_DIM> q_init, 
-                                        std::array<float, UPPER_LIMB_JOINTS_DIM> & q_output){
-
-//DOES NOT WORK
-
-  // Convert to kdl poses and joints
-  KDL::Vector l_pos(left_ee_pose.at(0), left_ee_pose.at(1), left_ee_pose.at(2));
-  KDL::Rotation l_rot = KDL::Rotation::Quaternion(left_ee_pose.at(3), left_ee_pose.at(4), left_ee_pose.at(5), left_ee_pose.at(6)); //x,y,z,w
-  KDL::Frame l_pose(l_rot, l_pos);
-
-  KDL::Vector r_pos(right_ee_pose.at(0), right_ee_pose.at(1), right_ee_pose.at(2));
-  KDL::Rotation r_rot = KDL::Rotation::Quaternion(right_ee_pose.at(3), right_ee_pose.at(4), right_ee_pose.at(5), right_ee_pose.at(6)); //x,y,z,w
-  KDL::Frame r_pose(r_rot, r_pos);
-
-  KDL::JntArray q_i(UPPER_LIMB_JOINTS_DIM);
-  KDL::JntArray q_out(UPPER_LIMB_JOINTS_DIM);
-
-  std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
-    14, // torso_joint
-    0,  // left_shoulder_pitch_joint
-    1,  // left_shoulder_roll_joint
-    2,  // left_shoulder_yaw_joint
-    3,  // left_elbow_joint
-    4,  // left_wrist_roll_joint
-    5,  // left_wrist_pitch_joint
-    6,  // left_wrist_yaw_joint
-    7,  // right_shoulder_pitch_joint
-    8,  // right_shoulder_roll_joint
-    9,  // right_shoulder_yaw_joint
-    10, // right_elbow_joint
-    11, // right_wrist_roll_joint
-    12, // right_wrist_pitch_joint
-    13  // right_wrist_yaw_joint
-  };
-
-  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-    q_i(i) = q_init[remap[i]];
-  }
-
-
-  // Endpoints names
-  std::vector<std::string> endpoints = {
-    tip_link_l,
-    tip_link_r
-  };
-
-  // Setup FK and velocity IK solvers
-  KDL::TreeFkSolverPos_recursive fk_solver(_h1_2_upper_limb_tree);
-  KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_upper_limb_tree, endpoints);
-
-  // Setup position IK solver with joint limits
-  unsigned int max_iter = 1000;
-  double epsilon = 1e-6;
-
-  
-  
-  KDL::TreeIkSolverPos_NR_JL ik_solver(_h1_2_upper_limb_tree, endpoints, *_q_lb, *_q_ub, fk_solver, ik_vel_solver, max_iter, epsilon);
-  
-  // Prepare map of target frames and their desired poses
-  std::map<std::string, KDL::Frame> target_poses;
-  target_poses[endpoints[0]] = l_pose;
-  target_poses[endpoints[1]] = r_pose;
-
-  std::cout << "=== IK Debug Info ===\n";
-  std::cout << "Max iterations: " << max_iter << "\n";
-  std::cout << "Epsilon: " << epsilon << "\n";
-
-  // Print endpoints
-  std::cout << "Endpoints:\n";
-  for (const auto& e : endpoints) {
-      std::cout << "  - " << e << "\n";
-  }
-
-  // Print joint limits (lower and upper bounds)
-  std::cout << "Joint limits:\n";
-  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-      std::cout << "  q_lb[" << i << "] = " << (*_q_lb)(i)
-                << ", q_ub[" << i << "] = " << (*_q_ub)(i) << "\n";
-  }
-
-  // Initial joint guess
-  std::cout << "Initial joint configuration (q_i):\n";
-  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-      std::cout << "  q_i[" << i << "] = " << q_i(i) << "\n";
-  }
-
-  // Target poses
-  std::cout << "Target poses:\n";
-  for (const auto& [name, frame] : target_poses) {
-      double x, y, z;
-      x = frame.p.x();
-      y = frame.p.y();
-      z = frame.p.z();
-      double qx, qy, qz, qw;
-      frame.M.GetQuaternion(qx, qy, qz, qw);
-      std::cout << "  Pose for " << name << ":\n";
-      std::cout << "    Position: [" << x << ", " << y << ", " << z << "]\n";
-      std::cout << "    Orientation (quat): [" << qx << ", " << qy << ", " << qz << ", " << qw << "]\n";
-  }
-
-
-  // Solve IK
-  int ret = ik_solver.CartToJnt(q_i, target_poses, q_out);
-  if (ret < 0) {
-      std::cerr << "TreeIkSolverPos_NR_JL failed with error code: " << ret << std::endl;
-      return false;
-  }
-  std::cout << "IK Output Joints (q_out):\n";
-  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-      std::cout << "  q_out[" << i << "] = " << q_out(i) << "\n";
-  }
-  
-  // Fill output array
-  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
-    q_output[remap[i]]=q_out(i);
-  }
-
-  return true;
-}
-
-
-bool H1_2_kdl::compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
                                               std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
                                               std::array<float, 6> target_left_ee_twist, 
                                               std::array<float, 6> target_right_ee_twist,
@@ -550,6 +427,7 @@ bool H1_2_kdl::compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> tar
   KDL::JntArray q_dot_out(UPPER_LIMB_JOINTS_DIM);
   KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_upper_limb_tree, endpoints);
   ik_vel_solver.setLambda(lambda);
+
   if(ik_vel_solver.CartToJnt(q_i, t_in, q_dot_out) < 0){
     std::cerr << "Failed ik\n";
     return false;
@@ -558,6 +436,11 @@ bool H1_2_kdl::compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> tar
     // Fill output array
     for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
       q_dot_output[remap[i]]=q_dot_out(i);
+    }
+    bool has_nan = std::any_of(q_dot_output.begin(), q_dot_output.end(), [](float x) { return std::isnan(x); });
+    if(has_nan){
+      std::cerr << "Failed ik: NaN detected\n";
+      return false;
     }
     // std::cout << "q_dot_out: ";
     // for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {

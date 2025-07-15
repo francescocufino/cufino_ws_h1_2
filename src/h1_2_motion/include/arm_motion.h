@@ -109,6 +109,7 @@ class Arm_motion{
                                     0.f};
                                     //Joints command
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
+    bool initialized_q_cmd = false;
 
     const std::array<JointIndex, UPPER_LIMB_JOINTS_DIM> arm_joints = {
         JointIndex::kLeftShoulderPitch,  JointIndex::kLeftShoulderRoll,
@@ -183,18 +184,31 @@ class Arm_motion{
      * WristRoll, WristPitch, WristYaw],    
      * WaistYaw
      */
-    void set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd);
+    void set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target);
 
     /**
-     * @brief Sets instantaneously the end-effectors poses, performing inverse kinematics
+     * @brief Sets instantaneously the end-effectors poses.
+     * This function has to be called in a loop in which the targets change following a
+     * desired trajectory. Closed loop inverse kinematics is performed, producing
+     * as output a velocity command, which is then integrated
+     * with an integration time dt and sent as command to the manipulator
      * 
-     * @param left_ee_pose Left end-effector configuration. Coordinates order: 
+     * @param target_left_ee_pose Left end-effector target pose. Coordinates order: 
      * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
-     * @param right_ee_pose Right end-effector configuration. Coordinates order: 
+     * @param target_right_ee_pose Right end-effector target pose. Coordinates order: 
      * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param target_left_ee_twist Left end-effector target twist. Coordinates order: 
+     * [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ]
+     * @param target_right_ee_twist Right end-effector target twist. Coordinates order: 
+     * [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ]
+     * @param dt Integration time
      */
-    void set_end_effector_poses(std::array<float, CARTESIAN_DIM> left_ee_pose, 
-                                std::array<float, CARTESIAN_DIM> right_ee_pose);
+
+    bool set_end_effector_targets(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+      std::array<float, CARTESIAN_DIM> target_right_ee_pose,
+      std::array<float, 6> target_left_ee_twist,
+      std::array<float, 6> target_right_ee_twist,
+      float dt);
 
     /**
      * @brief Stop the arms bringing them to the specific initial configuration
