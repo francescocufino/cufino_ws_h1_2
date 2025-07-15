@@ -176,6 +176,19 @@ class Arm_motion{
     void move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f);
 
     /**
+     * @brief Move the end-effectors to the specified targets along
+     * a straight line, with a polynomial velocity profile
+     * 
+     * @param target_left_ee_pose Left end-effector target pose. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param target_right_ee_pose Right end-effector target pose. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param t_f duration
+     */
+    void move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+      std::array<float, CARTESIAN_DIM> target_right_ee_pose, float t_f);
+
+    /**
      * @brief Sets instantaneously the upper limb joints to the specified joint angles
      * 
      * @param q_f Target configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 

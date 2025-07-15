@@ -39,19 +39,13 @@ Arm_motion::Arm_motion(){
 
 void Arm_motion::initialize_arms(){
   while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
-  //std::cout << "Press ENTER to init arms ...";
-  //std::cin.get();
-
-
+  
   // get current joint position
   std::array<float, UPPER_LIMB_JOINTS_DIM> current_jpos{};
-  //std::cout<<"Current joint position: ";
-  //std::cout << std::endl;
+
   for (int i = 0; i < arm_joints.size(); ++i) {
 	  current_jpos.at(i) = state_msg->motor_state().at(arm_joints.at(i)).q();
-    //std::cout << "q" << i << ": " << current_jpos.at(i) << ' ';
   }
-  //std::cout << std::endl;
 
   // set init pos
   std::cout << "Initailizing arms ...";
@@ -63,7 +57,6 @@ void Arm_motion::initialize_arms(){
     weight = 1.0;
     msg->motor_cmd().at(JointIndex::kNotUsedJoint).q(weight);
     float phase = 1.0 * i / init_time_steps;
-    //std::cout << "Phase: " << phase << std::endl;
 
     // set control joints
     for (int j = 0; j < init_pos.size(); ++j) {
@@ -77,23 +70,13 @@ void Arm_motion::initialize_arms(){
     std::this_thread::sleep_for(sleep_time);
   }
   arm_initialized = true;
-  //std::cout<<"Reached joint position q: ";
-  //std::cout << std::endl;
-  for (int i = 0; i < arm_joints.size(); ++i) {
-    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
-  }
-  //std::cout << std::endl << std::endl;
 }
 
   
 void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f){
   if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
 
-  //std::cout << "Press ENTER to start arm ctrl ..." << std::endl;
-  //std::cin.get();
-
   // start control
-  //std::cout << "Start arm ctrl!" << std::endl;
   int num_time_steps = static_cast<int>(t_f / control_dt);
 
   for (int i = 0; i < num_time_steps; ++i) {
@@ -119,27 +102,10 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 
   //Initial configuration q_i
   std::array<float, UPPER_LIMB_JOINTS_DIM> q_i{};
-  //std::cout<<"Current joint position q: ";
-  //std::cout << std::endl;
-  for (int i = 0; i < arm_joints.size(); ++i) {
-    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
-  }
-  //std::cout << std::endl << std::endl;
 
-  //std::cout<<"Planning from initial joint position q_i (last commanded one): ";
-  //std::cout << std::endl;
   for (int i = 0; i < arm_joints.size(); ++i) {
 	  q_i.at(i) = q_cmd.at(i);
-    //std::cout << "q_i" << i << ": " << q_i.at(i) << ' ';
   }
-  //std::cout << std::endl << std::endl;
-
-  //std::cout<<"Desired target joint position q_f: ";
-  //std::cout << std::endl;
-  for (int i = 0; i < arm_joints.size(); ++i) {
-    //std::cout << "q_f" << i << ": " << q_f.at(i) << ' ';
-  }
-  //std::cout << std::endl << std::endl;
 
   //Planning parameters
   std::array<float, UPPER_LIMB_JOINTS_DIM> a0{}, a1{}, a2{}, a3{}, a4{}, a5{};
@@ -151,12 +117,6 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
     a4.at(j) = (-15*q_f.at(j) + 15*q_i.at(j))/pow(t_f, 4);
     a5.at(j) = (6*q_f.at(j) - 6*q_i.at(j))/pow(t_f, 5);
   }
-
-  //std::cout << "Press ENTER to start arm ctrl poly..." << std::endl;
-  //std::cin.get();
-
-  // start control
-  //std::cout << "Start arm ctrl poly!" << std::endl;
 
   //Planning over the time interval [0, t_f]
   while(t<=t_f){
@@ -175,15 +135,131 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
     t = t + control_dt;
   }
 
-  //std::cout<<"Reached joint position q: ";
-  //std::cout << std::endl;
+}
+
+
+
+
+
+
+void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
+                                std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
+                                float t_f){
+
+  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+
+  //Initial time
+  float t = 0;
+
+  //Initial configuration
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_i;
+
   for (int i = 0; i < arm_joints.size(); ++i) {
-    //std::cout << "q" << i << ": " << state_msg->motor_state().at(arm_joints.at(i)).q() << ' ';
+	  q_i.at(i) = q_cmd.at(i);
   }
-  //std::cout << std::endl << std::endl;
+
+  std::array<float, CARTESIAN_DIM> init_left_ee_pose;
+  std::array<float, CARTESIAN_DIM> init_right_ee_pose;
+
+  h1_2_kdl.compute_upper_limb_fk(q_i, init_left_ee_pose, init_right_ee_pose);
+
+  //Time law planning parameters
+  double s = 0;
+  double s_dot;
+  double s_i = 0; 
+  double s_f = 1; 
+  double a0, a1, a2, a3, a4, a5;
   
+  a0 = s_i;
+  a1 = 0;
+  a2 = 0;
+  a3 = (10*s_f - 10*s_i)/pow(t_f, 3);
+  a4 = (-15*s_f + 15*s_i)/pow(t_f, 4);
+  a5 = (6*s_f - 6*s_i)/pow(t_f, 5);
+
+  //Geometrical planning parameters
+  //Initial and final positions
+  Eigen::Vector3d p_l_init(init_left_ee_pose.at(0), init_left_ee_pose.at(1), init_left_ee_pose.at(2) );
+  Eigen::Vector3d p_r_init(init_right_ee_pose.at(0), init_right_ee_pose.at(1), init_right_ee_pose.at(2) );
+  Eigen::Vector3d p_l_final(target_left_ee_pose.at(0), target_left_ee_pose.at(1), target_left_ee_pose.at(2) );
+  Eigen::Vector3d p_r_final(target_right_ee_pose.at(0), target_right_ee_pose.at(1), target_right_ee_pose.at(2) );
+
+  //Initial and final quaternions
+  Eigen::Quaterniond q_l_init(init_left_ee_pose.at(6),init_left_ee_pose.at(3),init_left_ee_pose.at(4),init_left_ee_pose.at(5));
+  Eigen::Quaterniond q_r_init(init_right_ee_pose.at(6),init_right_ee_pose.at(3),init_right_ee_pose.at(4),init_right_ee_pose.at(5));
+  Eigen::Quaterniond q_l_final(target_left_ee_pose.at(6),target_left_ee_pose.at(3),target_left_ee_pose.at(4),target_left_ee_pose.at(5));
+  Eigen::Quaterniond q_r_final(target_right_ee_pose.at(6),target_right_ee_pose.at(3),target_right_ee_pose.at(4),target_right_ee_pose.at(5));
+  
+  //Initial and final angle-axis
+  Eigen::AngleAxisd angle_axis_l(q_l_init.toRotationMatrix().transpose()*q_l_final.toRotationMatrix());
+  Eigen::Vector3d axis_l = angle_axis_l.axis();
+  double angle_l_init = 0;
+  double angle_l_final = angle_axis_l.angle();
+  Eigen::AngleAxisd angle_axis_r(q_r_init.toRotationMatrix().transpose()*q_r_final.toRotationMatrix());
+  Eigen::Vector3d axis_r = angle_axis_r.axis();
+  double angle_r_init = 0;
+  double angle_r_final = angle_axis_r.angle();
+
+
+  //Planning over the time interval [0, t_f]
+  while(t<=t_f){
+
+    //Actual pose
+    std::array<float, CARTESIAN_DIM> l_pose;
+    std::array<float, CARTESIAN_DIM> r_pose;
+    h1_2_kdl.compute_upper_limb_fk(q_i, l_pose, r_pose);
+    Eigen::Quaterniond q_actual_l(l_pose.at(6),l_pose.at(3),l_pose.at(4),l_pose.at(5));
+    Eigen::Quaterniond q_actual_r(r_pose.at(6),r_pose.at(3),r_pose.at(4),r_pose.at(5));
+
+
+    //Time law planning
+    s = a5*pow(t,5) + a4*pow(t,4) + a3*pow(t,3) + a2*pow(t,2)+ a1*t + a0;
+    s_dot = 5*a5*pow(t,4) + 4*a4*pow(t,3) + 3*a3*pow(t,2) + 2*a2*t + a1;
+
+    //Trajectory planning
+
+    //Position
+    Eigen::Vector3d p_l_cmd = p_l_init + s*(p_l_final - p_l_init);
+    Eigen::Vector3d p_r_cmd = p_r_init + s*(p_r_final - p_r_init);
+
+    //Linear velocity
+    Eigen::Vector3d p_l_dot_cmd = s_dot*(p_l_final - p_l_init);
+    Eigen::Vector3d p_r_dot_cmd = s_dot*(p_r_final - p_r_init);
+
+    //Orientation
+    double angle_l_cmd = angle_l_init + s*(angle_l_final - angle_l_init);
+    Eigen::AngleAxisd angle_axis_l_cmd(angle_l_cmd, axis_l);
+    //Transform in base frame
+    Eigen::Quaterniond q_l_cmd(q_actual_l.toRotationMatrix()* angle_axis_l_cmd.toRotationMatrix());
+
+    double angle_r_cmd = angle_l_init + s*(angle_r_final - angle_r_init);
+    Eigen::AngleAxisd angle_axis_r_cmd(angle_r_cmd, axis_r);
+    //Transform in base frame
+    Eigen::Quaterniond q_r_cmd(q_actual_r.toRotationMatrix()* angle_axis_r_cmd.toRotationMatrix());
+
+    //Angular velocity transformed in base frame
+    double angle_l_dot_cmd = s_dot*(angle_l_final - angle_l_init);
+    Eigen::Vector3d omega_l_cmd = q_actual_l.toRotationMatrix()*angle_l_dot_cmd*axis_l;
+    double angle_r_dot_cmd = s_dot*(angle_r_final - angle_r_init);
+    Eigen::Vector3d omega_r_cmd = q_actual_r.toRotationMatrix()*angle_r_dot_cmd*axis_r;
+
+    //Convert to std::array
+    std::array<float, CARTESIAN_DIM> left_ee_pose_cmd{(float)p_l_cmd.x(), (float)p_l_cmd.y(), (float)p_l_cmd.z(), (float)q_l_cmd.x(), (float)q_l_cmd.y(), (float)q_l_cmd.z(), (float)q_l_cmd.w()}; 
+    std::array<float, CARTESIAN_DIM> right_ee_pose_cmd{(float)p_r_cmd.x(), (float)p_r_cmd.y(), (float)p_r_cmd.z(), (float)q_r_cmd.x(), (float)q_r_cmd.y(), (float)q_r_cmd.z(), (float)q_r_cmd.w()}; 
+    std::array<float, 6> left_ee_twist_cmd{(float)p_l_dot_cmd.x(), (float)p_l_dot_cmd.y(), (float)p_l_dot_cmd.z(),(float)omega_l_cmd.x(), (float)omega_l_cmd.y(), (float)omega_l_cmd.z()};
+    std::array<float, 6> right_ee_twist_cmd{(float)p_r_dot_cmd.x(), (float)p_r_dot_cmd.y(), (float)p_r_dot_cmd.z(),(float)omega_r_cmd.x(), (float)omega_r_cmd.y(), (float)omega_r_cmd.z()};
+
+    set_end_effector_targets(left_ee_pose_cmd, right_ee_pose_cmd, left_ee_twist_cmd, right_ee_twist_cmd, control_dt);
+
+    // sleep
+    std::this_thread::sleep_for(sleep_time);
+
+    t = t + control_dt;
+  }
 
 }
+
+
 
 void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
   
@@ -223,14 +299,15 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     //Command
     for(int i=0; i<q_dot_out.size(); i++)
       q_cmd.at(i) = q_cmd.at(i) + dt*q_dot_out.at(i);
-      
+
     // Set also dq????
     set_upper_limb_joints(q_cmd);
+    return true;
   }
   else{
     set_upper_limb_joints(q_in);
     std::cerr << "Failed ikin\n";
-    exit(1);
+    return false;
   }
 
 }
