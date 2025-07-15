@@ -135,7 +135,10 @@ class H1_2_kdl{
           std::array<float, 6> target_left_ee_twist, 
           std::array<float, 6> target_right_ee_twist,
           std::array<float, UPPER_LIMB_JOINTS_DIM> q_feedback, 
-          std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output);
+          std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output,
+          double k_p,
+          double k_o,
+          double lambda);
 
     /**
      * @brief Performs the upper limb forward kinematics

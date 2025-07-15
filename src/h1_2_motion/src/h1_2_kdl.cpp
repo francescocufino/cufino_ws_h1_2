@@ -420,40 +420,159 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> left_ee_
 }
 
 
-
-
-
-
-
-
-
 bool H1_2_kdl::compute_upper_limb_ikin_clik(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
-  std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
-  std::array<float, 6> target_left_ee_twist, 
-  std::array<float, 6> target_right_ee_twist,
-  std::array<float, UPPER_LIMB_JOINTS_DIM> q_feedback, 
-  std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output){
+                                              std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
+                                              std::array<float, 6> target_left_ee_twist, 
+                                              std::array<float, 6> target_right_ee_twist,
+                                              std::array<float, UPPER_LIMB_JOINTS_DIM> q_feedback, 
+                                              std::array<float, UPPER_LIMB_JOINTS_DIM> & q_dot_output,
+                                              double k_p,
+                                              double k_o,
+                                              double lambda){
 
-    //Implement 3.92 of Siciliano's book, but instead of J^{-1} use KDL::TreeIkSolverVel_wdls
+  //Convert to Eigen
+  //Desired Poses
+  Eigen::Vector3d p_l_des(target_left_ee_pose.at(0),target_left_ee_pose.at(1), target_left_ee_pose.at(2));
+  Eigen::Quaterniond q_l_des(target_left_ee_pose.at(6), target_left_ee_pose.at(3), target_left_ee_pose.at(4), target_left_ee_pose.at(5));
+  Eigen::Vector3d p_r_des(target_right_ee_pose.at(0),target_right_ee_pose.at(1), target_right_ee_pose.at(2));
+  Eigen::Quaterniond q_r_des(target_right_ee_pose.at(6), target_right_ee_pose.at(3), target_right_ee_pose.at(4), target_right_ee_pose.at(5));
+  
+  //Actual Poses
+  std::array<float, CARTESIAN_DIM> left_ee_pose{};
+  std::array<float, CARTESIAN_DIM> right_ee_pose{};
+  compute_upper_limb_fk(q_feedback, left_ee_pose, right_ee_pose);
+
+  Eigen::Vector3d p_l(left_ee_pose.at(0),left_ee_pose.at(1), left_ee_pose.at(2));
+  Eigen::Quaterniond q_l(left_ee_pose.at(6), left_ee_pose.at(3), left_ee_pose.at(4), left_ee_pose.at(5));
+  Eigen::Vector3d p_r(right_ee_pose.at(0),right_ee_pose.at(1), right_ee_pose.at(2));
+  Eigen::Quaterniond q_r(right_ee_pose.at(6), right_ee_pose.at(3), right_ee_pose.at(4), right_ee_pose.at(5));
+  
+  //Desired Twists
+  Eigen::Vector3d p_l_dot_des(target_left_ee_twist.at(0),target_left_ee_twist.at(1), target_left_ee_twist.at(2));
+  Eigen::Vector3d omega_l_des(target_left_ee_twist.at(3), target_left_ee_twist.at(4), target_left_ee_twist.at(5));
+  Eigen::Vector3d p_r_dot_des(target_right_ee_twist.at(0),target_right_ee_twist.at(1), target_right_ee_twist.at(2));
+  Eigen::Vector3d omega_r_des(target_right_ee_twist.at(3), target_right_ee_twist.at(4), target_right_ee_twist.at(5));
+  
+  // std::cout << "p_l_des: " << p_l_des << "\n";
+  // std::cout << "q_l_des: " << q_l_des.vec() << ' ' << q_l_des.w() << "\n";
+  // std::cout << "p_r_des: " << p_r_des << "\n";
+  // std::cout << "q_r_des: " << q_r_des.vec() << ' ' << q_l_des.w() << "\n";
+
+  // std::cout << "p_l: " << p_l << "\n";
+  // std::cout << "q_l: " << q_l.vec() << ' ' << q_l.w() << "\n";
+  // std::cout << "p_r: " << p_r << "\n";
+  // std::cout << "q_r: " << q_r.vec() << ' ' << q_l.w() << "\n";
+
+  // std::cout << "p_l_dot_des: " << p_l_dot_des << "\n";
+  // std::cout << "omega_l_des: " << omega_l_des << "\n";
+  // std::cout << "p_r_dot_des: " << p_r_dot_des << "\n";
+  // std::cout << "omega_r_des: " << omega_r_des << "\n";
 
 
+  //Position and orientation error
+  Eigen::Vector3d e_p_l = p_l_des - p_l;
+  Eigen::Vector3d e_p_r = p_r_des - p_r;
 
-    //Convert to KDL
+  q_l_des.normalize();
+  q_l.normalize();
+  Eigen::Vector3d e_o_l =(q_l_des * q_l.conjugate()).vec();
+  q_r_des.normalize();
+  q_r.normalize();
+  Eigen::Vector3d e_o_r =(q_r_des * q_r.conjugate()).vec();
+  // std::cout << "e_p_l: " << e_p_l << "\n";
+  // std::cout << "e_p_r: " << e_p_r << "\n";
+  // std::cout << "e_o_l: " << e_o_l << "\n";
+  // std::cout << "e_o_r: " << e_o_r << "\n";
 
-    //Compute position and orientation error
+  //Compute the twist in (3.92) v_in = [p_dot_d + K_p e_p; omega_d + K_o e_o]
+  Eigen::VectorXd t_l_in(6);
+  t_l_in.head<3>() = p_l_dot_des + k_p * e_p_l;
+  t_l_in.tail<3>() = omega_l_des + k_o * e_o_l;
 
-    //Compute the twist in 3.92 v_in = [p_dot_d + K_p e_p; omega_d + K_o e_o]
+  Eigen::VectorXd t_r_in(6);
+  t_r_in.head<3>() = p_r_dot_des + k_p * e_p_r;
+  t_r_in.tail<3>() = omega_r_des + k_o * e_o_r;
 
-    //Compute joint velocity with damped least square Jacobian
-    //using CartToJnt(const KDL::JntArray &q_in, const KDL::Twists &v_in, KDL::JntArray &qdot_out)
+  // std::cout << "t_l_in: " << t_l_in << "\n";
+  // std::cout << "t_r_in: " << t_r_in << "\n";
+  
+  //Convert to KDL
+  //Twists
+  std::vector<std::string> endpoints = {
+    tip_link_l,
+    tip_link_r
+  };
 
-    //Return qdot_out
+  KDL::Twist t_l(KDL::Vector(t_l_in[0], t_l_in[1], t_l_in[2]),
+                  KDL::Vector(t_l_in[3], t_l_in[4], t_l_in[5]));
+  KDL::Twist t_r(KDL::Vector(t_r_in[0], t_r_in[1], t_r_in[2]),
+                  KDL::Vector(t_r_in[3], t_r_in[4], t_r_in[5]));    
+  KDL::Twists t_in;
+  
+  t_in[endpoints[0]] = t_l;
+  t_in[endpoints[1]] = t_r;
 
-    //Call this function in a loop and integrate qdot outside this function. Then, at next iteration, provide
-    //the q feedback
+  //Joints Positions
+  KDL::JntArray q_i(UPPER_LIMB_JOINTS_DIM);
 
+  // q_in has the torso joint as last joint value, but here in kdl tree we have it as first joint value, so we remap
 
+  std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
+    14, // torso_joint
+    0,  // left_shoulder_pitch_joint
+    1,  // left_shoulder_roll_joint
+    2,  // left_shoulder_yaw_joint
+    3,  // left_elbow_joint
+    4,  // left_wrist_roll_joint
+    5,  // left_wrist_pitch_joint
+    6,  // left_wrist_yaw_joint
+    7,  // right_shoulder_pitch_joint
+    8,  // right_shoulder_roll_joint
+    9,  // right_shoulder_yaw_joint
+    10, // right_elbow_joint
+    11, // right_wrist_roll_joint
+    12, // right_wrist_pitch_joint
+    13  // right_wrist_yaw_joint
+  };
+
+  for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+    q_i(i) = q_feedback[remap[i]];
   }
+
+  // std::cout << "q_i: ";
+  // for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+  //     std::cout << q_i(i) << ' '; 
+  // }
+  //std::cout << "\n";
+
+
+  //Perform inverse kinematics
+  KDL::JntArray q_dot_out(UPPER_LIMB_JOINTS_DIM);
+  KDL::TreeIkSolverVel_wdls ik_vel_solver(_h1_2_upper_limb_tree, endpoints);
+  ik_vel_solver.setLambda(lambda);
+  if(ik_vel_solver.CartToJnt(q_i, t_in, q_dot_out) < 0){
+    std::cerr << "Failed ik\n";
+    return false;
+  }
+  else{
+    // Fill output array
+    for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
+      q_dot_output[remap[i]]=q_dot_out(i);
+    }
+    // std::cout << "q_dot_out: ";
+    // for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
+    //     std::cout << q_dot_out(i) << ' '; 
+    // }
+    // std::cout << "\n";
+    return true;
+  }
+
+
+  //Call this function in a loop and integrate qdot outside this function. Then, at next iteration, provide
+  //the q feedback
+
+
+}
 
 
 
