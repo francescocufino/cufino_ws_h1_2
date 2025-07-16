@@ -1,16 +1,21 @@
 #include "arm_motion.h"
+#include <csignal>
+
+
 
 std::unique_ptr<Arm_motion> h1_motion_ptr = std::make_unique<Arm_motion>();
 
-void stop(){
+void stop(int){
     h1_motion_ptr->stop_arms();
     return;
 }
 
 int main(){
 
+    std::signal(SIGINT, stop);
+
     //Move arms to initial position
-    h1_motion_ptr->initialize_arms();
+    //h1_motion_ptr->initialize_arms();
 
     //TEST 0: get joint angles
     std::array<float, UPPER_LIMB_JOINTS_DIM> q = h1_motion_ptr->get_angles();
@@ -23,7 +28,7 @@ int main(){
 
     //////////////////////////////////////////////////////////////////////////
 
-
+/*
     //TEST 1: get end-effector poses
     std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(init_left_ee_pose, init_right_ee_pose);
@@ -45,8 +50,6 @@ int main(){
 
 
     //TEST 2: Perform fake right ee linear motion
-    /****MODIFY THE FUNCTION MOVE ARMS TO GET THE FAKE FEEDBACK AND SAVING THE DATA,    
-     * //Add safety check, add stop in destructor*/
 
     std::array<float, 7UL> target_left_ee_pose, target_right_ee_pose;
     target_left_ee_pose = init_left_ee_pose;
@@ -84,7 +87,7 @@ int main(){
     h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
 
 
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
 
     //TEST 3: Perform fake left linear motion
@@ -120,9 +123,9 @@ int main(){
     //Go back to initial position
     h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
 
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-//TEST 4 Perform fake rotation of righgt hand
+    //TEST 4 Perform fake rotation of righgt hand
     std::array<float, 7UL> actual_left_ee_pose, actual_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(actual_left_ee_pose, actual_right_ee_pose);
 
@@ -148,8 +151,7 @@ int main(){
 
     h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
-//4) modify to use fake feedback
-
+*/
 
 
 }

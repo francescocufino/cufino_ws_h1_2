@@ -53,6 +53,7 @@ void Arm_motion::initialize_arms(){
   int init_time_steps = static_cast<int>(init_time / control_dt);
 
   for (int i = 0; i < init_time_steps; ++i) {
+    if(stop){break;}
     // set weight
     weight = 1.0;
     msg->motor_cmd().at(JointIndex::kNotUsedJoint).q(weight);
@@ -121,7 +122,7 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
   }
 
   //Planning over the time interval [0, t_f]
-  while(t<=t_f){
+  while(t<=t_f && !stop){
 
     //Commanding joints
     for (int j = 0; j < q_cmd.size(); ++j) {
@@ -218,7 +219,7 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
 
 
   //Planning over the time interval [0, t_f]
-  while(t<=t_f){
+  while(t<=t_f && !stop){
 
 
     //Actual pose
@@ -378,6 +379,9 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
 
 
 void Arm_motion::stop_arms(){
+  stop = true;
+  std::cout << "Stop flag activated, exiting from control loops\n";
+  /*
   std::cout << "Stopping arm ctrl: returning to initial position ...\n";
   move_arms_polynomial(init_pos, 2);
   std::cout << "Stopping arm ctrl ...\n";
@@ -398,6 +402,7 @@ void Arm_motion::stop_arms(){
     // sleep
     std::this_thread::sleep_for(sleep_time);
   }
+  */
   store_data();
 }
 

@@ -164,6 +164,8 @@ class Arm_motion{
     void writeCSV(const std::string &filename, const std::vector<std::array<float, N>> &data);
     void store_data();
 
+    //Emergency stop
+    bool stop = false;
 
   public:
     Arm_motion();
