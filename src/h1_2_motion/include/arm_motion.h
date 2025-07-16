@@ -109,7 +109,12 @@ class Arm_motion{
                                     0.f};
                                     //Joints command
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
+
+
     bool initialized_q_cmd = false;
+    bool initialized_q_cmd_ikin = false;
+
 
     const std::array<JointIndex, UPPER_LIMB_JOINTS_DIM> arm_joints = {
         JointIndex::kLeftShoulderPitch,  JointIndex::kLeftShoulderRoll,
@@ -141,6 +146,23 @@ class Arm_motion{
     unitree::robot::ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> low_state_subscriber;
     std::shared_ptr<unitree_hg::msg::dds_::LowState_> state_msg;
 
+    //Safety check
+    bool safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target, double delta);
+
+    //Data storage for test move_ee_linear
+    std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM>> joint_positions_cmd;
+    std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM>> joint_positions_actual;
+    std::vector<std::array<float, CARTESIAN_DIM>> left_ee_cmd;
+    std::vector<std::array<float, CARTESIAN_DIM>> right_ee_cmd;
+    std::vector<std::array<float, CARTESIAN_DIM>> left_ee_actual;
+    std::vector<std::array<float, CARTESIAN_DIM>> right_ee_actual;
+    std::vector<std::array<float, 6>> left_twist_ee_cmd;
+    std::vector<std::array<float, 6>> right_twist_ee_cmd;
+
+    //Save data to csv for test move_ee_linear
+    template <size_t N>
+    void writeCSV(const std::string &filename, const std::vector<std::array<float, N>> &data);
+    void store_data();
 
 
   public:
@@ -237,7 +259,17 @@ class Arm_motion{
      * WaistYaw
      */
     std::array<float, UPPER_LIMB_JOINTS_DIM> get_angles();
-            /**
+    
+    /**
+     * @brief Get the end-effector poses
+     * @param left_ee_pose Left end-effector pose. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     * @param right_ee_pose Right end-effector pose. Coordinates order: 
+     * [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW]
+     */
+    void get_end_effectors_poses(std::array<float, CARTESIAN_DIM>& left_ee_pose, 
+                            std::array<float, CARTESIAN_DIM>& right_ee_pose);
+    /**
      * @brief Get estimated arms torques
      * 
      * Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, 

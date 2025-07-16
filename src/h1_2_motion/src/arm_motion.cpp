@@ -148,14 +148,26 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
 
   if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
 
+  
+
   //Initial time
   float t = 0;
 
   //Initial configuration
   std::array<float, UPPER_LIMB_JOINTS_DIM> q_i;
 
-  for (int i = 0; i < arm_joints.size(); ++i) {
-	  q_i.at(i) = q_cmd.at(i);
+  //TO START FROM LAST COMMANDED CONFIGURATION:
+  // for (int i = 0; i < arm_joints.size(); ++i) {
+	//   q_i.at(i) = q_cmd.at(i);
+  // }
+
+  //TO START FROM ACTUAL CONFIGURATION:
+  q_i = get_angles();
+
+  //Initialize q_cmd
+  if(!initialized_q_cmd_ikin){
+    q_cmd_ikin = q_i;
+    initialized_q_cmd_ikin = true;
   }
 
   std::array<float, CARTESIAN_DIM> init_left_ee_pose;
@@ -204,7 +216,13 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   //Planning over the time interval [0, t_f]
   while(t<=t_f){
 
+
     //Actual pose
+    q_i = get_angles();
+
+    //FAKE FEEDBACK, THEN REMOVE!
+    q_i = q_cmd_ikin;
+
     std::array<float, CARTESIAN_DIM> l_pose;
     std::array<float, CARTESIAN_DIM> r_pose;
     h1_2_kdl.compute_upper_limb_fk(q_i, l_pose, r_pose);
@@ -229,19 +247,17 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
     //Orientation
     double angle_l_cmd = angle_l_init + s*(angle_l_final - angle_l_init);
     Eigen::AngleAxisd angle_axis_l_cmd(angle_l_cmd, axis_l);
-    //Transform in base frame
-    Eigen::Quaterniond q_l_cmd(q_actual_l.toRotationMatrix()* angle_axis_l_cmd.toRotationMatrix());
+    Eigen::Quaterniond q_l_cmd(q_actual_l.toRotationMatrix()* angle_axis_l_cmd.toRotationMatrix()); //transformed in base frame
 
     double angle_r_cmd = angle_l_init + s*(angle_r_final - angle_r_init);
     Eigen::AngleAxisd angle_axis_r_cmd(angle_r_cmd, axis_r);
-    //Transform in base frame
-    Eigen::Quaterniond q_r_cmd(q_actual_r.toRotationMatrix()* angle_axis_r_cmd.toRotationMatrix());
+    Eigen::Quaterniond q_r_cmd(q_actual_r.toRotationMatrix()* angle_axis_r_cmd.toRotationMatrix()); //transformed in base frame
 
-    //Angular velocity transformed in base frame
+    //Angular velocity
     double angle_l_dot_cmd = s_dot*(angle_l_final - angle_l_init);
-    Eigen::Vector3d omega_l_cmd = q_actual_l.toRotationMatrix()*angle_l_dot_cmd*axis_l;
+    Eigen::Vector3d omega_l_cmd = q_actual_l.toRotationMatrix()*angle_l_dot_cmd*axis_l; //transformed in base frame 
     double angle_r_dot_cmd = s_dot*(angle_r_final - angle_r_init);
-    Eigen::Vector3d omega_r_cmd = q_actual_r.toRotationMatrix()*angle_r_dot_cmd*axis_r;
+    Eigen::Vector3d omega_r_cmd = q_actual_r.toRotationMatrix()*angle_r_dot_cmd*axis_r; //transformed in base frame
 
     //Convert to std::array
     std::array<float, CARTESIAN_DIM> left_ee_pose_cmd{(float)p_l_cmd.x(), (float)p_l_cmd.y(), (float)p_l_cmd.z(), (float)q_l_cmd.x(), (float)q_l_cmd.y(), (float)q_l_cmd.z(), (float)q_l_cmd.w()}; 
@@ -250,6 +266,8 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
     std::array<float, 6> right_ee_twist_cmd{(float)p_r_dot_cmd.x(), (float)p_r_dot_cmd.y(), (float)p_r_dot_cmd.z(),(float)omega_r_cmd.x(), (float)omega_r_cmd.y(), (float)omega_r_cmd.z()};
 
     set_end_effector_targets(left_ee_pose_cmd, right_ee_pose_cmd, left_ee_twist_cmd, right_ee_twist_cmd, control_dt);
+
+
 
     // sleep
     std::this_thread::sleep_for(sleep_time);
@@ -260,19 +278,6 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
 }
 
 
-
-void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
-  
-  //Set the command equal to the target
-  for (int j = 0; j < q_target.size(); ++j) {
-    msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
-    msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
-    msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
-  }
-  // send dds msg
-  arm_sdk_publisher->Write(*msg);
-}
-
 bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
                                           std::array<float, CARTESIAN_DIM> target_right_ee_pose,
                                           std::array<float, 6> target_left_ee_twist,
@@ -282,10 +287,17 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
   //Get actual angles
   std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
 
-  //Initialize q_cmd
-  if(!initialized_q_cmd){
-    q_cmd = q_in;
-    initialized_q_cmd = true;
+  //FAKE FEEDBACK, THEN REMOVE
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = q_cmd_ikin;
+
+  std::array<float, CARTESIAN_DIM> left_ee, right_ee;
+  get_end_effectors_poses(left_ee, right_ee);
+
+  //Initialize q_cmd_ikin
+  //ADD CONDITION TO RE INITIALIZE q_cmd_ikin IF IT IS FAR FROM ACTUAL CONFIGURATION
+  if(!initialized_q_cmd_ikin){
+    q_cmd_ikin = q_in;
+    initialized_q_cmd_ikin= true;
   }
 
   //Perform inverse kinematics to obtain joints commands
@@ -295,13 +307,30 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
                                                     q_in, q_dot_out,
                                                     100, 100, 1e-3);
 
+
+
   if(ikin_res){
     //Command
     for(int i=0; i<q_dot_out.size(); i++)
-      q_cmd.at(i) = q_cmd.at(i) + dt*q_dot_out.at(i);
+      q_cmd_ikin.at(i) = q_cmd_ikin.at(i) + dt*q_dot_out.at(i);
+
+    q_cmd = q_cmd_ikin;
 
     // Set also dq????
-    set_upper_limb_joints(q_cmd);
+
+    //FAKE FEEDBACK, NOT SETTING THE POSITION, THEN UNCOMMENT
+    //set_upper_limb_joints(q_cmd_ikin);
+
+    //Save commanded data for test
+    joint_positions_cmd.push_back(q_cmd_ikin);
+    joint_positions_actual.push_back(q_in);
+    left_ee_cmd.push_back(target_left_ee_pose);
+    right_ee_cmd.push_back(target_right_ee_pose);
+    left_ee_actual.push_back(left_ee);
+    right_ee_actual.push_back(right_ee);
+    left_twist_ee_cmd.push_back(target_left_ee_twist);
+    right_twist_ee_cmd.push_back(target_right_ee_twist);
+
     return true;
   }
   else{
@@ -310,6 +339,36 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     return false;
   }
 
+}
+
+
+
+void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
+  
+  if(safety_check(q_target, 0.02)){
+    //Set the command equal to the target
+    for (int j = 0; j < q_target.size(); ++j) {
+      msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+    }
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+  }
+  else{
+    std::cerr << "Safety check not passed. Fixing joints at actual configuration and exiting\n";
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
+    //Set the command equal to the target
+    for (int j = 0; j < q.size(); ++j) {
+      msg->motor_cmd().at(arm_joints.at(j)).q(q.at(j));
+      msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
+      msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+    }
+    // send dds msg
+    arm_sdk_publisher->Write(*msg);
+    exit(1);
+  } 
+ 
 }
 
 
@@ -335,6 +394,7 @@ void Arm_motion::stop_arms(){
     // sleep
     std::this_thread::sleep_for(sleep_time);
   }
+  store_data();
 }
 
 std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_angles(){
@@ -346,6 +406,14 @@ std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_angles(){
   return q;
 }
 
+void Arm_motion::get_end_effectors_poses(std::array<float, CARTESIAN_DIM>& left_ee_pose, 
+                              std::array<float, CARTESIAN_DIM>& right_ee_pose){
+
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
+  h1_2_kdl.compute_upper_limb_fk(q, left_ee_pose, right_ee_pose);
+
+  }
+
 std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_est_torques(){
   while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
   std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est{};
@@ -354,6 +422,52 @@ std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_est_torques(){
   }
   return tau_est;
 }
+
+bool Arm_motion::safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target, double delta){
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
+  for(int i=0; i<q.size(); i++){
+    if(abs(q.at(i) - q_target.at(i)) > delta){
+      return false;
+    }
+  }
+  return true;
+}
+
+template <size_t N>
+void Arm_motion::writeCSV(const std::string &filename, const std::vector<std::array<float, N>> &data) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Could not open file: " << filename << std::endl;
+        return;
+    }
+
+    //file << std::fixed << std::setprecision(1);
+    for (const auto &row : data) {
+        for (size_t i = 0; i < row.size(); ++i) {
+            file << row[i];
+            if (i < row.size() - 1)
+                file << ",";
+        }
+        file << std::endl;
+    }
+    
+
+    file.close();
+    std::cout << "Data written to " << filename << std::endl;
+}
+
+void Arm_motion::store_data(){
+  writeCSV("../h1_2_demo/output/joint_positions_actual.csv", joint_positions_actual);
+  writeCSV("../h1_2_demo/output/joint_positions_cmd.csv", joint_positions_cmd);
+  writeCSV("../h1_2_demo/output/left_ee_cmd.csv", left_ee_cmd);
+  writeCSV("../h1_2_demo/output/right_ee_cmd.csv", right_ee_cmd);
+  writeCSV("../h1_2_demo/output/left_ee_actual.csv", left_ee_actual);
+  writeCSV("../h1_2_demo/output/right_ee_actual.csv", right_ee_actual);
+  writeCSV("../h1_2_demo/output/left_twist_ee_cmd.csv", left_twist_ee_cmd);
+  writeCSV("../h1_2_demo/output/right_twist_ee_cmd.csv", right_twist_ee_cmd);
+
+}
+
 
 
 
