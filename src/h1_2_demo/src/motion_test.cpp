@@ -92,10 +92,8 @@ int main(){
     target_right_ee_pose = init_right_ee_pose;
     target_left_ee_pose.at(0) = target_left_ee_pose.at(0)+0.1;
 
-    double t = 10;
     h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
-    std::array<float, 7UL> reached_left_ee_pose, reached_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
 
     std::cout << "Left reached ee pose:\n";

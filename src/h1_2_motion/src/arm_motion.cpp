@@ -63,6 +63,7 @@ void Arm_motion::initialize_arms(){
       q_cmd.at(j) = init_pos.at(j) * phase + current_jpos.at(j) * (1 - phase);
     }
     if(!initialized_q_cmd){initialized_q_cmd = true;}
+    initialized_q_cmd_ikin = false; //q_cmd_ikin has to be initialized again if other function modify q and it is not updated
 
     set_upper_limb_joints(q_cmd);
 
@@ -87,6 +88,7 @@ void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f
                      -max_joint_delta, max_joint_delta);
     }
     if(!initialized_q_cmd){initialized_q_cmd = true;}
+    initialized_q_cmd_ikin = false; //q_cmd_ikin has to be initialized again if other function modify q and it is not updated
     set_upper_limb_joints(q_cmd);
 
     // sleep
@@ -127,6 +129,8 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
     }
 
     if(!initialized_q_cmd){initialized_q_cmd = true;}
+    initialized_q_cmd_ikin = false; //q_cmd_ikin has to be initialized again if other function modify q and it is not updated
+
     set_upper_limb_joints(q_cmd);
 
     // sleep
@@ -164,7 +168,7 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   //TO START FROM ACTUAL CONFIGURATION:
   q_i = get_angles();
 
-  //Initialize q_cmd
+  //Initialize q_cmd_ikin for fake feedback
   if(!initialized_q_cmd_ikin){
     q_cmd_ikin = q_i;
     initialized_q_cmd_ikin = true;
@@ -288,13 +292,13 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
   std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
 
   //FAKE FEEDBACK, THEN REMOVE
-  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = q_cmd_ikin;
+  q_in = q_cmd_ikin;
 
   std::array<float, CARTESIAN_DIM> left_ee, right_ee;
   get_end_effectors_poses(left_ee, right_ee);
 
   //Initialize q_cmd_ikin
-  //ADD CONDITION TO RE INITIALIZE q_cmd_ikin IF IT IS FAR FROM ACTUAL CONFIGURATION
+
   if(!initialized_q_cmd_ikin){
     q_cmd_ikin = q_in;
     initialized_q_cmd_ikin= true;
@@ -345,7 +349,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
 
 void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
   
-  if(safety_check(q_target, 0.02)){
+  if(safety_check(q_target, 0.05)){
     //Set the command equal to the target
     for (int j = 0; j < q_target.size(); ++j) {
       msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
