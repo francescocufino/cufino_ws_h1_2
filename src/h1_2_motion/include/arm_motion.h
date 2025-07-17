@@ -95,8 +95,7 @@ class Arm_motion{
     const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
-                                    
-    */                       
+
     const std::array<float, UPPER_LIMB_JOINTS_DIM> kp_array = { 240, 240, 160, 100, 50, 50, 50, 
                                     240, 240, 160, 100, 50, 50, 50, 
                                     200 };
@@ -104,12 +103,57 @@ class Arm_motion{
                                     2.0, 2.0, 1.5, 1.0, 1.0, 1.0, 1.0, 
                                     2.0 };
     
+                                    
+    */               
+   const std::array<float, UPPER_LIMB_JOINTS_DIM> kp_array = { 800, 800, 800, 800, 50, 50, 50, 
+    800, 800, 800, 800, 50, 50, 50, 
+    800 };
+const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15.0, 2.0, 2.0, 2.0, 
+    15.0, 15.0, 15.0, 15.0, 2.0, 2.0, 2.0, 
+    15.0 };
+
+    
     const std::array<float, UPPER_LIMB_JOINTS_DIM> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
                                     0.f, -0.3, 0.f, 0, 0, 0, 0,
                                     0.f};
                                     //Joints command
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
+
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q_lb{      // Joints limits (hard-coded)
+      -3.14f,    // kLeftShoulderPitch
+      -0.38f,    // kLeftShoulderRoll
+      -2.66f,    // kLeftShoulderYaw
+      -0.95f,    // kLeftElbow
+      -3.01f,    // kLeftWistRoll
+      -0.4625f,  // kLeftWistPitch
+      -1.27f,    // kLeftWistYaw
+      -3.14f,    // kRightShoulderPitch
+      -3.4f,     // kRightShoulderRoll
+      -3.01f,    // kRightShoulderYaw
+      -0.95f,    // kRightElbow
+      -2.75f,    // kRightWistRoll
+      -0.4625f,  // kRightWistPitch
+      -1.27f,    // kRightWistYaw
+      -2.35f};     // kWaistYaw
+
+
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q_ub{
+      1.57f,     // kLeftShoulderPitch
+      3.4f,      // kLeftShoulderRoll
+      3.01f,     // kLeftShoulderYaw
+      3.18f,     // kLeftElbow
+      2.75f,     // kLeftWistRoll
+      0.4625f,   // kLeftWistPitch
+      1.27f,     // kLeftWistYaw
+      1.57f,     // kRightShoulderPitch
+      0.38f,     // kRightShoulderRoll
+      2.66f,     // kRightShoulderYaw
+      3.18f,     // kRightElbow
+      3.01f,     // kRightWistRoll
+      0.4625f,   // kRightWistPitch
+      1.27f,     // kRightWistYaw
+      2.35f};      // kWaistYaw
 
 
     bool initialized_q_cmd = false;
@@ -148,6 +192,7 @@ class Arm_motion{
 
     //Safety check
     bool safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target, double delta);
+    bool limits_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target);
 
     //Data storage for test move_ee_linear
     std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM>> joint_positions_cmd;

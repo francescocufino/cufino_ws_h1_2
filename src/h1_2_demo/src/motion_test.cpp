@@ -3,19 +3,23 @@
 
 
 
-std::unique_ptr<Arm_motion> h1_motion_ptr = std::make_unique<Arm_motion>();
+std::unique_ptr<Arm_motion> h1_motion_ptr; 
 
 void stop(int){
     h1_motion_ptr->stop_arms();
     return;
 }
 
-int main(){
+int main(int argc, char const *argv[]){
+    unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
+    h1_motion_ptr = std::make_unique<Arm_motion>();
 
     std::signal(SIGINT, stop);
+    
 
     //Move arms to initial position
     //h1_motion_ptr->initialize_arms();
+
 
     //TEST 0: get joint angles
     std::array<float, UPPER_LIMB_JOINTS_DIM> q = h1_motion_ptr->get_angles();
@@ -28,7 +32,9 @@ int main(){
 
     //////////////////////////////////////////////////////////////////////////
 
-/*
+    
+
+
     //TEST 1: get end-effector poses
     std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(init_left_ee_pose, init_right_ee_pose);
@@ -55,8 +61,10 @@ int main(){
     target_left_ee_pose = init_left_ee_pose;
     target_right_ee_pose = init_right_ee_pose;
     target_right_ee_pose.at(0) = target_right_ee_pose.at(0)+0.1;
+    target_right_ee_pose.at(2) = target_right_ee_pose.at(2)+0.05;
 
-    double t = 10;
+
+    double t = 5;
     h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
     std::array<float, 7UL> reached_left_ee_pose, reached_right_ee_pose;
@@ -83,10 +91,11 @@ int main(){
     std::cout << "\n";
     std::cout << "\n";
 
-    //Go back to initial position
-    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+    //Perform another motion
+    target_right_ee_pose.at(0) = target_right_ee_pose.at(0)+0.03;
+    //h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
-
+/*
     //////////////////////////////////////////////////////////////////////////
 
 

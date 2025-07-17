@@ -48,7 +48,7 @@ void Arm_motion::initialize_arms(){
   }
 
   // set init pos
-  std::cout << "Initailizing arms ...";
+  std::cout << "\033[36m[INFO] Initalizing arms ...\033[0m";
   float init_time = 2.0f;
   int init_time_steps = static_cast<int>(init_time / control_dt);
 
@@ -76,10 +76,12 @@ void Arm_motion::initialize_arms(){
 
   
 void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f){
-  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+  if(!arm_initialized){std::cout << "\033[31m[ERROR] Arms not initialized. Cannot perform arm motion.\033[0m\n"; return;}
 
   // start control
   int num_time_steps = static_cast<int>(t_f / control_dt);
+
+  std::cout << "\033[36m[INFO] Performing arms motion...\033[0m\n";
 
   for (int i = 0; i < num_time_steps; ++i) {
     // update jpos des
@@ -95,10 +97,13 @@ void Arm_motion::move_arms_integral(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f
     // sleep
     std::this_thread::sleep_for(sleep_time);
   }
+
+  std::cout << "\033[32m[INFO] Arms motion concluded.\033[0m\n";
+
 }
 
 void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q_f, float t_f){
-  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+  if(!arm_initialized){std::cout << "\033[31m[ERROR] Arms not initialized. Cannot perform arm motion.\033[0m\n"; return;}
 
   //Initial time
   float t = 0;
@@ -121,6 +126,8 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
     a5.at(j) = (6*q_f.at(j) - 6*q_i.at(j))/pow(t_f, 5);
   }
 
+  std::cout << "\033[36m[INFO] Performing arms motion...\033[0m\n";
+
   //Planning over the time interval [0, t_f]
   while(t<=t_f && !stop){
 
@@ -139,6 +146,8 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 
     t = t + control_dt;
   }
+  std::cout << "\033[32m[INFO] Arms motion concluded.\033[0m\n";
+
 
 }
 
@@ -150,8 +159,9 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
                                 std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
                                 float t_f){
-
-  if(!arm_initialized){std::cout << "Arms not initialized. Cannot perform arm motion\n"; return;}
+  //FAKE FEEDBACK, THEN REMOVE
+  arm_initialized = true;
+  if(!arm_initialized){std::cout << "\033[31m[ERROR] Arms not initialized. Cannot perform arm motion \033[0m\n"; return;}
 
   
 
@@ -217,13 +227,19 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   double angle_r_init = 0;
   double angle_r_final = angle_axis_r.angle();
 
+  bool cmd_orientation = true;
+
+  if(q_l_init.vec() == q_l_final.vec() && q_l_init.w() == q_l_final.w() && q_r_init.vec() == q_r_final.vec() && q_r_init.w() == q_r_final.w()){
+    cmd_orientation = false;
+  }
+
+  std::cout << "\033[36m[INFO] Performing arms motion...\033[0m\n";
 
   //Planning over the time interval [0, t_f]
   while(t<=t_f && !stop){
 
-
     //Actual pose
-    q_i = get_angles();
+    //q_i = get_angles();
 
     //FAKE FEEDBACK, THEN REMOVE!
     q_i = q_cmd_ikin;
@@ -264,12 +280,22 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
     double angle_r_dot_cmd = s_dot*(angle_r_final - angle_r_init);
     Eigen::Vector3d omega_r_cmd = q_actual_r.toRotationMatrix()*angle_r_dot_cmd*axis_r; //transformed in base frame
 
+    //If orientation is not commanded, give the initial one
+    if(!cmd_orientation){
+      q_l_cmd = q_l_init;
+      q_r_cmd = q_r_init;
+      omega_l_cmd = {0,0,0};
+      omega_r_cmd = {0,0,0};
+    }
+    
+
     //Convert to std::array
     std::array<float, CARTESIAN_DIM> left_ee_pose_cmd{(float)p_l_cmd.x(), (float)p_l_cmd.y(), (float)p_l_cmd.z(), (float)q_l_cmd.x(), (float)q_l_cmd.y(), (float)q_l_cmd.z(), (float)q_l_cmd.w()}; 
     std::array<float, CARTESIAN_DIM> right_ee_pose_cmd{(float)p_r_cmd.x(), (float)p_r_cmd.y(), (float)p_r_cmd.z(), (float)q_r_cmd.x(), (float)q_r_cmd.y(), (float)q_r_cmd.z(), (float)q_r_cmd.w()}; 
     std::array<float, 6> left_ee_twist_cmd{(float)p_l_dot_cmd.x(), (float)p_l_dot_cmd.y(), (float)p_l_dot_cmd.z(),(float)omega_l_cmd.x(), (float)omega_l_cmd.y(), (float)omega_l_cmd.z()};
     std::array<float, 6> right_ee_twist_cmd{(float)p_r_dot_cmd.x(), (float)p_r_dot_cmd.y(), (float)p_r_dot_cmd.z(),(float)omega_r_cmd.x(), (float)omega_r_cmd.y(), (float)omega_r_cmd.z()};
 
+    
     set_end_effector_targets(left_ee_pose_cmd, right_ee_pose_cmd, left_ee_twist_cmd, right_ee_twist_cmd, control_dt);
 
 
@@ -279,6 +305,9 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
 
     t = t + control_dt;
   }
+  std::cout << "\033[32m[INFO] Arms motion concluded.\033[0m\n";
+
+  store_data();
 
 }
 
@@ -290,7 +319,9 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
                                           float dt){
 
   //Get actual angles
-  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in = get_angles();
+  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in;
+  
+  //q_in = get_angles();
 
   //FAKE FEEDBACK, THEN REMOVE
   q_in = q_cmd_ikin;
@@ -340,7 +371,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
   }
   else{
     set_upper_limb_joints(q_in);
-    std::cerr << "Failed ikin\n";
+    std::cerr << "\033[31m[ERROR] Failed ikin.\033[0m\n";
     return false;
   }
 
@@ -349,8 +380,11 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
 
 
 void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
+
+  bool safety = safety_check(q_target, 0.2);
+  bool limits = limits_check(q_target);
   
-  if(safety_check(q_target, 0.05)){
+  if(safety && limits){
     //Set the command equal to the target
     for (int j = 0; j < q_target.size(); ++j) {
       msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
@@ -361,7 +395,13 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
     arm_sdk_publisher->Write(*msg);
   }
   else{
-    std::cerr << "Safety check not passed. Fixing joints at actual configuration and exiting\n";
+    if(!safety)
+      std::cerr << "\033[31m[ERROR] Safety check not passed.\033[0m\n";
+
+    if(!limits)
+      std::cerr << "\033[31m[ERROR] Limit check not passed.\033[0m\n";
+
+    std::cerr << "\033[31m[ERROR] Fixing joints at actual configuration and exiting.\033[0m\n";    
     std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
     //Set the command equal to the target
     for (int j = 0; j < q.size(); ++j) {
@@ -371,6 +411,7 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
     }
     // send dds msg
     arm_sdk_publisher->Write(*msg);
+    store_data();
     exit(1);
   } 
  
@@ -380,7 +421,7 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
 
 void Arm_motion::stop_arms(){
   stop = true;
-  std::cout << "Stop flag activated, exiting from control loops\n";
+  std::cout << "\033[36m[INFO] Stop flag activated, exiting from control loops.\033[0m\n";
   /*
   std::cout << "Stopping arm ctrl: returning to initial position ...\n";
   move_arms_polynomial(init_pos, 2);
@@ -403,7 +444,7 @@ void Arm_motion::stop_arms(){
     std::this_thread::sleep_for(sleep_time);
   }
   */
-  store_data();
+  //store_data();
 }
 
 std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_angles(){
@@ -442,11 +483,21 @@ bool Arm_motion::safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target,
   return true;
 }
 
+bool Arm_motion::limits_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target){
+  for(int i=0; i<q_target.size(); i++){
+    if(q_target.at(i) <= q_lb.at(i) || q_target.at(i) >= q_ub.at(i)){
+      return false;
+    }
+  }
+  return true;
+}
+
+
 template <size_t N>
 void Arm_motion::writeCSV(const std::string &filename, const std::vector<std::array<float, N>> &data) {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Could not open file: " << filename << std::endl;
+        std::cerr << "\033[31m[ERROR]Could not open file: " << filename << "\033[0m" << std::endl;
         return;
     }
 
@@ -462,18 +513,18 @@ void Arm_motion::writeCSV(const std::string &filename, const std::vector<std::ar
     
 
     file.close();
-    std::cout << "Data written to " << filename << std::endl;
+    std::cout << "\033[32m[INFO] Data written to " << filename << "\033[0m" << std::endl;
 }
 
 void Arm_motion::store_data(){
-  writeCSV("../h1_2_demo/output/joint_positions_actual.csv", joint_positions_actual);
-  writeCSV("../h1_2_demo/output/joint_positions_cmd.csv", joint_positions_cmd);
-  writeCSV("../h1_2_demo/output/left_ee_cmd.csv", left_ee_cmd);
-  writeCSV("../h1_2_demo/output/right_ee_cmd.csv", right_ee_cmd);
-  writeCSV("../h1_2_demo/output/left_ee_actual.csv", left_ee_actual);
-  writeCSV("../h1_2_demo/output/right_ee_actual.csv", right_ee_actual);
-  writeCSV("../h1_2_demo/output/left_twist_ee_cmd.csv", left_twist_ee_cmd);
-  writeCSV("../h1_2_demo/output/right_twist_ee_cmd.csv", right_twist_ee_cmd);
+  writeCSV("../src/h1_2_demo/output/joint_positions_actual.csv", joint_positions_actual);
+  writeCSV("../src/h1_2_demo/output/joint_positions_cmd.csv", joint_positions_cmd);
+  writeCSV("../src/h1_2_demo/output/left_ee_cmd.csv", left_ee_cmd);
+  writeCSV("../src/h1_2_demo/output/right_ee_cmd.csv", right_ee_cmd);
+  writeCSV("../src/h1_2_demo/output/left_ee_actual.csv", left_ee_actual);
+  writeCSV("../src/h1_2_demo/output/right_ee_actual.csv", right_ee_actual);
+  writeCSV("../src/h1_2_demo/output/left_twist_ee_cmd.csv", left_twist_ee_cmd);
+  writeCSV("../src/h1_2_demo/output/right_twist_ee_cmd.csv", right_twist_ee_cmd);
 
 }
 
