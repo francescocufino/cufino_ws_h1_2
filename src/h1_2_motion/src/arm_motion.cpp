@@ -159,36 +159,29 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
                                 std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
                                 float t_f){
-  //FAKE FEEDBACK, THEN REMOVE
-  arm_initialized = true;
+
   if(!arm_initialized){std::cout << "\033[31m[ERROR] Arms not initialized. Cannot perform arm motion \033[0m\n"; return;}
 
-  
 
   //Initial time
   float t = 0;
 
-  //Initial configuration
-  std::array<float, UPPER_LIMB_JOINTS_DIM> q_i;
-
   //TO START FROM LAST COMMANDED CONFIGURATION:
   // for (int i = 0; i < arm_joints.size(); ++i) {
-	//   q_i.at(i) = q_cmd.at(i);
+	//   q_cmd_ikin.at(i) = q_cmd.at(i);
   // }
 
-  //TO START FROM ACTUAL CONFIGURATION:
-  q_i = get_angles();
-
-  //Initialize q_cmd_ikin for fake feedback
+  //Initialize q_cmd_ikin
   if(!initialized_q_cmd_ikin){
-    q_cmd_ikin = q_i;
+    q_cmd_ikin = get_angles(); //TO START FROM ACTUAL CONFIGURATION:
     initialized_q_cmd_ikin = true;
   }
 
+  //Initialize end-effector poses
   std::array<float, CARTESIAN_DIM> init_left_ee_pose;
   std::array<float, CARTESIAN_DIM> init_right_ee_pose;
 
-  h1_2_kdl.compute_upper_limb_fk(q_i, init_left_ee_pose, init_right_ee_pose);
+  h1_2_kdl.compute_upper_limb_fk(q_cmd_ikin, init_left_ee_pose, init_right_ee_pose);
 
   //Time law planning parameters
   double s = 0;
@@ -227,11 +220,7 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   double angle_r_init = 0;
   double angle_r_final = angle_axis_r.angle();
 
-  bool cmd_orientation = true;
-
-  if(q_l_init.vec() == q_l_final.vec() && q_l_init.w() == q_l_final.w() && q_r_init.vec() == q_r_final.vec() && q_r_init.w() == q_r_final.w()){
-    cmd_orientation = false;
-  }
+  bool cmd_orientation = false;
 
   std::cout << "\033[36m[INFO] Performing arms motion...\033[0m\n";
 
@@ -239,17 +228,11 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   while(t<=t_f && !stop){
 
     //Actual pose
-    //q_i = get_angles();
-
-    //FAKE FEEDBACK, THEN REMOVE!
-    q_i = q_cmd_ikin;
-
     std::array<float, CARTESIAN_DIM> l_pose;
     std::array<float, CARTESIAN_DIM> r_pose;
-    h1_2_kdl.compute_upper_limb_fk(q_i, l_pose, r_pose);
+    h1_2_kdl.compute_upper_limb_fk(q_cmd_ikin, l_pose, r_pose); //Fake feedback. To use real, use get_angles() instead of q_cmd_ikin
     Eigen::Quaterniond q_actual_l(l_pose.at(6),l_pose.at(3),l_pose.at(4),l_pose.at(5));
     Eigen::Quaterniond q_actual_r(r_pose.at(6),r_pose.at(3),r_pose.at(4),r_pose.at(5));
-
 
     //Time law planning
     s = a5*pow(t,5) + a4*pow(t,4) + a3*pow(t,3) + a2*pow(t,2)+ a1*t + a0;
@@ -318,21 +301,10 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
                                           std::array<float, 6> target_right_ee_twist,
                                           float dt){
 
-  //Get actual angles
-  std::array<float, UPPER_LIMB_JOINTS_DIM> q_in;
-  
-  //q_in = get_angles();
-
-  //FAKE FEEDBACK, THEN REMOVE
-  q_in = q_cmd_ikin;
-
-  std::array<float, CARTESIAN_DIM> left_ee, right_ee;
-  get_end_effectors_poses(left_ee, right_ee);
-
   //Initialize q_cmd_ikin
 
   if(!initialized_q_cmd_ikin){
-    q_cmd_ikin = q_in;
+    q_cmd_ikin = get_angles();;
     initialized_q_cmd_ikin= true;
   }
 
@@ -340,9 +312,8 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
   std::array<float, UPPER_LIMB_JOINTS_DIM> q_dot_out{};
   bool ikin_res = h1_2_kdl.compute_upper_limb_ikin(target_left_ee_pose, target_right_ee_pose, 
                                                     target_left_ee_twist, target_right_ee_twist, 
-                                                    q_in, q_dot_out,
-                                                    100, 100, 1e-3);
-
+                                                    q_cmd_ikin, q_dot_out,
+                                                    100, 100, 1e-3); //Fake feedback. To use real, use get_angles() instead of q_cmd_ikin
 
 
   if(ikin_res){
@@ -355,11 +326,16 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     // Set also dq????
 
     //FAKE FEEDBACK, NOT SETTING THE POSITION, THEN UNCOMMENT
-    //set_upper_limb_joints(q_cmd_ikin);
+    set_upper_limb_joints(q_cmd_ikin);
+
+    //Get actual quantities for test
+    std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
+    std::array<float, CARTESIAN_DIM> left_ee, right_ee;
+    get_end_effectors_poses(left_ee, right_ee);
 
     //Save commanded data for test
     joint_positions_cmd.push_back(q_cmd_ikin);
-    joint_positions_actual.push_back(q_in);
+    joint_positions_actual.push_back(q);
     left_ee_cmd.push_back(target_left_ee_pose);
     right_ee_cmd.push_back(target_right_ee_pose);
     left_ee_actual.push_back(left_ee);
@@ -370,7 +346,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     return true;
   }
   else{
-    set_upper_limb_joints(q_in);
+    set_upper_limb_joints(get_angles());
     std::cerr << "\033[31m[ERROR] Failed ikin.\033[0m\n";
     return false;
   }

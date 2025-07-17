@@ -18,7 +18,7 @@ int main(int argc, char const *argv[]){
     
 
     //Move arms to initial position
-    //h1_motion_ptr->initialize_arms();
+    h1_motion_ptr->initialize_arms();
 
 
     //TEST 0: get joint angles
@@ -93,7 +93,11 @@ int main(int argc, char const *argv[]){
 
     //Perform another motion
     target_right_ee_pose.at(0) = target_right_ee_pose.at(0)+0.03;
-    //h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+
+    //Go back to init position
+    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+
 
 /*
     //////////////////////////////////////////////////////////////////////////
