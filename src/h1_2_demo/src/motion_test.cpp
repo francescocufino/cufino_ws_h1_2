@@ -17,8 +17,6 @@ int main(int argc, char const *argv[]){
     std::signal(SIGINT, stop);
     
 
-    //Move arms to initial position
-    h1_motion_ptr->initialize_arms();
 
 
     //TEST 0: get joint angles
@@ -31,9 +29,12 @@ int main(int argc, char const *argv[]){
     std::cout << "\n";
 
     //////////////////////////////////////////////////////////////////////////
+ /*
+   
 
-    
 
+    //Move arms to initial position
+    h1_motion_ptr->initialize_arms();
 
     //TEST 1: get end-effector poses
     std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
@@ -91,15 +92,12 @@ int main(int argc, char const *argv[]){
     std::cout << "\n";
     std::cout << "\n";
 
-    //Perform another motion
-    target_right_ee_pose.at(0) = target_right_ee_pose.at(0)+0.03;
-    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
     //Go back to init position
     h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
 
 
-/*
+
     //////////////////////////////////////////////////////////////////////////
 
 
@@ -107,6 +105,8 @@ int main(int argc, char const *argv[]){
     target_left_ee_pose = init_left_ee_pose;
     target_right_ee_pose = init_right_ee_pose;
     target_left_ee_pose.at(0) = target_left_ee_pose.at(0)+0.1;
+    target_left_ee_pose.at(2) = target_left_ee_pose.at(2)+0.05;
+
 
     h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
 
@@ -136,9 +136,48 @@ int main(int argc, char const *argv[]){
     //Go back to initial position
     h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
 
-    //////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
-    //TEST 4 Perform fake rotation of righgt hand
+    //TEST 4: coordinated motion
+    target_left_ee_pose = init_left_ee_pose;
+    target_right_ee_pose = init_right_ee_pose;
+    target_left_ee_pose.at(0) = target_left_ee_pose.at(0)+0.1;
+    target_left_ee_pose.at(2) = target_left_ee_pose.at(2)+0.05;
+    target_right_ee_pose.at(0) = target_right_ee_pose.at(0)-0.1;
+    target_right_ee_pose.at(2) = target_right_ee_pose.at(2)-0.05;
+
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+
+    h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
+
+    std::cout << "Left reached ee pose:\n";
+    for(int i=0; i<reached_left_ee_pose.size(); i++){
+        std::cout << reached_left_ee_pose.at(i) << ' ';
+    }
+    std::cout << "\n";
+    std::cout << "Right reached ee pose:\n";
+    for(int i=0; i<reached_right_ee_pose.size(); i++){
+        std::cout << reached_right_ee_pose.at(i) << ' ';
+    }
+    std::cout << "\n";
+    std::cout << "Difference on final poses:\n";
+    for(int i=0; i<target_left_ee_pose.size(); i++){
+        std::cout << target_left_ee_pose.at(i) - reached_left_ee_pose.at(i) << ' ';
+    }
+    std::cout << "\n";
+    for(int i=0; i<target_right_ee_pose.size(); i++){
+        std::cout << target_right_ee_pose.at(i) - reached_right_ee_pose.at(i) << ' ';
+    }
+    std::cout << "\n";
+    std::cout << "\n";
+
+    //Go back to initial position
+    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+
+*/
+    //////////////////////////////////////////////////////////////////////////
+/*
+    //TEST 5 Perform fake rotation of righgt hand
     std::array<float, 7UL> actual_left_ee_pose, actual_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(actual_left_ee_pose, actual_right_ee_pose);
 

@@ -115,7 +115,7 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     
     const std::array<float, UPPER_LIMB_JOINTS_DIM> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
                                     0.f, -0.3, 0.f, 0, 0, 0, 0,
-                                    0.f};
+                                    0.0f};
                                     //Joints command
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
