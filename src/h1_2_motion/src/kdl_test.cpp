@@ -130,7 +130,7 @@ int main (){
     for(int i=0; i<r_pose.size(); i++){
         std::cout << r_pose_target.at(i) - r_pose_reached.at(i) << ' ';
     }
-*/
+
 
 
 
@@ -307,7 +307,7 @@ std::cout << "Difference on final pose:\n";
 
 
 
-
+*/
 
 
 

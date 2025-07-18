@@ -106,16 +106,13 @@ class Arm_motion{
                                     
     */               
    const std::array<float, UPPER_LIMB_JOINTS_DIM> kp_array = { 800, 800, 800, 800, 50, 50, 50, 
-    800, 800, 800, 800, 50, 50, 50, 
-    800 };
+    800, 800, 800, 800, 50, 50, 50};
 const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15.0, 2.0, 2.0, 2.0, 
-    15.0, 15.0, 15.0, 15.0, 2.0, 2.0, 2.0, 
-    15.0 };
+    15.0, 15.0, 15.0, 15.0, 2.0, 2.0, 2.0};
 
     
     const std::array<float, UPPER_LIMB_JOINTS_DIM> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
-                                    0.f, -0.3, 0.f, 0, 0, 0, 0,
-                                    0.0f};
+                                    0.f, -0.3, 0.f, 0, 0, 0, 0};
                                     //Joints command
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
@@ -134,8 +131,8 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
       -0.95f,    // kRightElbow
       -2.75f,    // kRightWistRoll
       -0.4625f,  // kRightWistPitch
-      -1.27f,    // kRightWistYaw
-      -2.35f};     // kWaistYaw
+      -1.27f    // kRightWistYaw
+      };     // kWaistYaw
 
 
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_ub{
@@ -152,8 +149,8 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
       3.18f,     // kRightElbow
       3.01f,     // kRightWistRoll
       0.4625f,   // kRightWistPitch
-      1.27f,     // kRightWistYaw
-      2.35f};      // kWaistYaw
+      1.27f     // kRightWistYaw
+      };      // kWaistYaw
 
 
     bool initialized_q_cmd = false;
@@ -166,8 +163,7 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
         JointIndex::kLeftWistRoll,       JointIndex::kLeftWistPitch,     JointIndex::kLeftWistYaw,       
         JointIndex::kRightShoulderPitch, JointIndex::kRightShoulderRoll,
         JointIndex::kRightShoulderYaw,   JointIndex::kRightElbow, 
-        JointIndex::kRightWistRoll,      JointIndex::kRightWistPitch,    JointIndex::kRightWistYaw,       
-        JointIndex::kWaistYaw};
+        JointIndex::kRightWistRoll,      JointIndex::kRightWistPitch,    JointIndex::kRightWistYaw};
     float weight = 0.f;
     float weight_rate = 0.2f;
     float dq = 0.f;
@@ -255,7 +251,9 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
      * @param t_f duration
      */
     void move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
-      std::array<float, CARTESIAN_DIM> target_right_ee_pose, float t_f);
+      std::array<float, CARTESIAN_DIM> target_right_ee_pose,
+      bool cmd_orientation, 
+      float t_f);
 
     /**
      * @brief Sets instantaneously the upper limb joints to the specified joint angles

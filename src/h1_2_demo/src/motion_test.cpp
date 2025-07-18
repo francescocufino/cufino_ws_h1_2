@@ -13,8 +13,18 @@ void stop(int){
 int main(int argc, char const *argv[]){
     unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
     h1_motion_ptr = std::make_unique<Arm_motion>();
+    std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
+    std::array<float, 7UL> target_left_ee_pose, target_right_ee_pose;
+    std::array<float, 7UL> reached_left_ee_pose, reached_right_ee_pose;
+
+
+    double t = 5;
+
 
     std::signal(SIGINT, stop);
+
+    //Move arms to initial position
+    h1_motion_ptr->initialize_arms();
     
 
 
@@ -29,15 +39,14 @@ int main(int argc, char const *argv[]){
     std::cout << "\n";
 
     //////////////////////////////////////////////////////////////////////////
- /*
+
    
 
 
-    //Move arms to initial position
-    h1_motion_ptr->initialize_arms();
+
+
 
     //TEST 1: get end-effector poses
-    std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(init_left_ee_pose, init_right_ee_pose);
 
     std::cout << "Left initial ee pose:\n";
@@ -58,17 +67,15 @@ int main(int argc, char const *argv[]){
 
     //TEST 2: Perform fake right ee linear motion
 
-    std::array<float, 7UL> target_left_ee_pose, target_right_ee_pose;
     target_left_ee_pose = init_left_ee_pose;
     target_right_ee_pose = init_right_ee_pose;
     target_right_ee_pose.at(0) = target_right_ee_pose.at(0)+0.1;
     target_right_ee_pose.at(2) = target_right_ee_pose.at(2)+0.05;
 
 
-    double t = 5;
-    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+    
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, false, t);
 
-    std::array<float, 7UL> reached_left_ee_pose, reached_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
 
     std::cout << "Left reached ee pose:\n";
@@ -94,7 +101,7 @@ int main(int argc, char const *argv[]){
 
 
     //Go back to init position
-    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, false, t);
 
 
 
@@ -108,7 +115,7 @@ int main(int argc, char const *argv[]){
     target_left_ee_pose.at(2) = target_left_ee_pose.at(2)+0.05;
 
 
-    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, false, t);
 
     h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
 
@@ -134,10 +141,10 @@ int main(int argc, char const *argv[]){
     std::cout << "\n";
 
     //Go back to initial position
-    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, false, t);
 
     ////////////////////////////////////////////////////////////////////
-
+ 
     //TEST 4: coordinated motion
     target_left_ee_pose = init_left_ee_pose;
     target_right_ee_pose = init_right_ee_pose;
@@ -146,7 +153,7 @@ int main(int argc, char const *argv[]){
     target_right_ee_pose.at(0) = target_right_ee_pose.at(0)-0.1;
     target_right_ee_pose.at(2) = target_right_ee_pose.at(2)-0.05;
 
-    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, false, t);
 
     h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
 
@@ -172,23 +179,23 @@ int main(int argc, char const *argv[]){
     std::cout << "\n";
 
     //Go back to initial position
-    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(init_left_ee_pose, init_right_ee_pose, false, t);
 
-*/
+
     //////////////////////////////////////////////////////////////////////////
 /*
-    //TEST 5 Perform fake rotation of righgt hand
+    //TEST 5 Perform fake rotation of right hand
     std::array<float, 7UL> actual_left_ee_pose, actual_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(actual_left_ee_pose, actual_right_ee_pose);
 
     Eigen::Quaterniond q_actual_r(actual_right_ee_pose.at(6), actual_right_ee_pose.at(3), actual_right_ee_pose.at(4), actual_right_ee_pose.at(5));
 
     // Define 15 degrees in radians
-    double angle_deg = 15.0;
+    double angle_deg = 1.0;
     double angle_rad = angle_deg * M_PI / 180.0;
 
     // Rotation around Z axis (mobile frame)
-    Eigen::AngleAxisd rotation(angle_rad, Eigen::Vector3d::UnitZ());
+    Eigen::AngleAxisd rotation(angle_rad, Eigen::Vector3d::UnitX());
     Eigen::Quaterniond q_rotation(rotation);
 
     // Apply rotation in the MOBILE frame (post-multiply)
@@ -201,9 +208,17 @@ int main(int argc, char const *argv[]){
     target_right_ee_pose.at(5) = (float)q_new.z();
     target_right_ee_pose.at(6) = (float)q_new.w();
 
-    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, t);
+    h1_motion_ptr->move_ee_linear(target_left_ee_pose, target_right_ee_pose, true, t);
+
+    h1_motion_ptr->get_end_effectors_poses(reached_left_ee_pose, reached_right_ee_pose);
+
+    std::cout << "Difference on final poses:\n";
+    for(int i=0; i<target_left_ee_pose.size(); i++){
+        std::cout << target_left_ee_pose.at(i) - reached_left_ee_pose.at(i) << ' ';
+    }
 
 */
+
 
 
 }

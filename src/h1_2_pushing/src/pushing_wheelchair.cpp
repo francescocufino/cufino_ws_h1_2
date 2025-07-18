@@ -82,12 +82,12 @@ void Pushing::test_pushing(){
   //                                   -0.0316936, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
   //                                   0.f};
   std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_pushing_test = {-0.0237002, 0.21376, -0.121089, 0.41662, -0.0699079, 0.359728, -0.142376,
-                                              -0.0145812, -0.210837, 0.12468, 0.440892, 0.0750732, 0.37466, 0.150034, 
-                                              -0.000562433,};
+                                              -0.0145812, -0.210837, 0.12468, 0.440892, 0.0750732, 0.37466, 0.150034}; 
+                                              //-0.000562433,};
   
   std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_2_pushing_test = {0.5, 0.240571, -0.109105, 0.394378, -0.0633168, 0.361801, -0.133496,
-                                    0.5, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496,
-                                    0.f};
+                                    0.5, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496};
+                                    //0.f};
   std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1);
   std::array<float, HANDS_JOINTS_DIM> hand_closed_pos; hand_closed_pos.fill(0);
   move_hands(hand_opened_pos);
@@ -163,8 +163,8 @@ bool Pushing::send_wrenches_UDP(std::array<float, WRENCH_DIM> f_est){
 void Pushing::test_force_est(){
   std::array<float, WRENCH_DIM> f_est = {0,0,0,0,0,0,0,0,0,0,0,0};
   std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_force_test = {0.060183, 0.0551721, 0.000710487, 1.18461, 0.0328448, 0.0337567, -0.0323732,
-                                            0.0184591, -0.000766754, -0.0243986, -0.0613762, -0.064399, 0.0569582, -0.0392926,
-                                            -0.00184074};
+                                            0.0184591, -0.000766754, -0.0243986, -0.0613762, -0.064399, 0.0569582, -0.0392926};
+                                            //-0.00184074};
 
   initialize_arms();
   move_arms_polynomial(arm_pos_force_test, 3);
@@ -182,8 +182,8 @@ void Pushing::test_force_est(){
 
 void Pushing::test_COM_motion(){
   std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_COM_test = {-1.2, 0, 0, 1.43903, 0, 0, 0,
-                                            -1.2, 0, 0, 1.43903, 0, 0, 0, 
-                                            0};
+                                            -1.2, 0, 0, 1.43903, 0, 0, 0}; 
+                                            //0};
   initialize_arms();
   move_arms_polynomial(arm_pos_COM_test, 3);
   std::cout << "Press ENTER to start rotate ...";

@@ -1,5 +1,5 @@
 % Define base path
-base_path = '../h1_2_demo/output/';
+base_path = './';
 timestep = 0.02;  % seconds
 
 % File names and plot titles

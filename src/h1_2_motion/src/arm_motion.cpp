@@ -157,7 +157,8 @@ void Arm_motion::move_arms_polynomial(std::array<float, UPPER_LIMB_JOINTS_DIM> q
 
 
 void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 
-                                std::array<float, CARTESIAN_DIM> target_right_ee_pose, 
+                                std::array<float, CARTESIAN_DIM> target_right_ee_pose,
+                                bool cmd_orientation, 
                                 float t_f){
 
   if(!arm_initialized){std::cout << "\033[31m[ERROR] Arms not initialized. Cannot perform arm motion \033[0m\n"; return;}
@@ -220,7 +221,6 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
   double angle_r_init = 0;
   double angle_r_final = angle_axis_r.angle();
 
-  bool cmd_orientation = false;
 
   std::cout << "\033[36m[INFO] Performing arms motion...\033[0m\n";
 
@@ -289,7 +289,7 @@ void Arm_motion::move_ee_linear(std::array<float, CARTESIAN_DIM> target_left_ee_
     t = t + control_dt;
   }
   std::cout << "\033[32m[INFO] Arms motion concluded.\033[0m\n";
-
+  //initialized_q_cmd_ikin = false;
   store_data();
 
 }
@@ -313,7 +313,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
   bool ikin_res = h1_2_kdl.compute_upper_limb_ikin(target_left_ee_pose, target_right_ee_pose, 
                                                     target_left_ee_twist, target_right_ee_twist, 
                                                     q_cmd_ikin, q_dot_out,
-                                                    100, 100, 1e-3); //Fake feedback. To use real, use get_angles() instead of q_cmd_ikin
+                                                    100, 15, 1e-3); //Fake feedback. To use real, use get_angles() instead of q_cmd_ikin
 
 
   if(ikin_res){
@@ -366,6 +366,7 @@ void Arm_motion::set_upper_limb_joints(std::array<float, UPPER_LIMB_JOINTS_DIM> 
       msg->motor_cmd().at(arm_joints.at(j)).q(q_target.at(j));
       msg->motor_cmd().at(arm_joints.at(j)).dq(dq);
       msg->motor_cmd().at(arm_joints.at(j)).tau(tau_ff);
+      msg->motor_cmd().at(arm_joints.at(j)).mode() = 1; 
     }
     // send dds msg
     arm_sdk_publisher->Write(*msg);

@@ -32,7 +32,7 @@
 #include <eigen3/Eigen/Dense>
 
 #define WRENCH_DIM 12
-#define UPPER_LIMB_JOINTS_DIM 15
+#define UPPER_LIMB_JOINTS_DIM 14
 #define CARTESIAN_DIM 7
 #define JOINTS_DIM 27
 
@@ -49,7 +49,7 @@ class H1_2_kdl{
     KDL::Tree _h1_2_tree;
     KDL::Tree _h1_2_upper_limb_tree;
 
-    std::string base_link = "pelvis";
+    std::string base_link = "torso_link";
     std::string tip_link_l  = "L_hand_base_link";
     std::string tip_link_r  = "R_hand_base_link";
     std::vector<std::string> _upper_limb_joint_names;
@@ -91,10 +91,10 @@ class H1_2_kdl{
 
     bool extractMinimalSubTree();
 
-    /*
+    
     void extract_joint_names_from_tree();
     void extract_joint_names_recursive(const KDL::TreeElement& segment);
-    */
+    
 
   public:
     H1_2_kdl();

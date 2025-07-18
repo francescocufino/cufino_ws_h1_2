@@ -32,13 +32,13 @@ bool H1_2_kdl::init_robot_model(){
   if(!extractMinimalSubTree())
     return false;
 
-  //extract_joint_names_from_tree();
-  // std::cout << "Joint names in order:\n";
-  // for(int i=0; i<_upper_limb_joint_names.size(); i++){
-  //   std::cout << _upper_limb_joint_names[i] << "\n";
-  // }
+  extract_joint_names_from_tree();
+//   std::cout << "Joint names in order:\n";
+//   for(int i=0; i<_upper_limb_joint_names.size(); i++){
+//     std::cout << _upper_limb_joint_names[i] << "\n";
+//   }
 
-  //Print upper limb tree
+//   //Print upper limb tree
 //   for (const auto& segment_pair : _h1_2_upper_limb_tree.getSegments()) {
 //     const std::string& segment_name = segment_pair.first;
 //     const KDL::Segment& segment = segment_pair.second.segment;
@@ -76,37 +76,37 @@ bool H1_2_kdl::init_robot_model(){
 
 
   // Joints limits (hard-coded)
-  _q_lb->data[1] = -3.14f;    // kLeftShoulderPitch
-  _q_lb->data[2] = -0.38f;    // kLeftShoulderRoll
-  _q_lb->data[3] = -2.66f;    // kLeftShoulderYaw
-  _q_lb->data[4] = -0.95f;    // kLeftElbow
-  _q_lb->data[5] = -3.01f;    // kLeftWistRoll
-  _q_lb->data[6] = -0.4625f;  // kLeftWistPitch
-  _q_lb->data[7] = -1.27f;    // kLeftWistYaw
-  _q_lb->data[8] = -3.14f;    // kRightShoulderPitch
-  _q_lb->data[9] = -3.4f;     // kRightShoulderRoll
-  _q_lb->data[10] = -3.01f;    // kRightShoulderYaw
-  _q_lb->data[11] = -0.95f;    // kRightElbow
-  _q_lb->data[12] = -2.75f;    // kRightWistRoll
-  _q_lb->data[13] = -0.4625f;  // kRightWistPitch
-  _q_lb->data[14] = -1.27f;    // kRightWistYaw
-  _q_lb->data[0] =-2.35f;     // kWaistYaw
+  _q_lb->data[0] = -3.14f;    // kLeftShoulderPitch
+  _q_lb->data[1] = -0.38f;    // kLeftShoulderRoll
+  _q_lb->data[2] = -2.66f;    // kLeftShoulderYaw
+  _q_lb->data[3] = -0.95f;    // kLeftElbow
+  _q_lb->data[4] = -3.01f;    // kLeftWistRoll
+  _q_lb->data[5] = -0.4625f;  // kLeftWistPitch
+  _q_lb->data[6] = -1.27f;    // kLeftWistYaw
+  _q_lb->data[7] = -3.14f;    // kRightShoulderPitch
+  _q_lb->data[8] = -3.4f;     // kRightShoulderRoll
+  _q_lb->data[9] = -3.01f;    // kRightShoulderYaw
+  _q_lb->data[10] = -0.95f;    // kRightElbow
+  _q_lb->data[11] = -2.75f;    // kRightWistRoll
+  _q_lb->data[12] = -0.4625f;  // kRightWistPitch
+  _q_lb->data[13] = -1.27f;    // kRightWistYaw
+  //_q_lb->data[0] =-2.35f;     // kWaistYaw
 
-  _q_ub->data[1] =  1.57f;     // kLeftShoulderPitch
-  _q_ub->data[2] =  3.4f;      // kLeftShoulderRoll
-  _q_ub->data[3] =  3.01f;     // kLeftShoulderYaw
-  _q_ub->data[4] =  3.18f;     // kLeftElbow
-  _q_ub->data[5] =  2.75f;     // kLeftWistRoll
-  _q_ub->data[6] =  0.4625f;   // kLeftWistPitch
-  _q_ub->data[7] =  1.27f;     // kLeftWistYaw
-  _q_ub->data[8] =  1.57f;     // kRightShoulderPitch
-  _q_ub->data[9] =  0.38f;     // kRightShoulderRoll
-  _q_ub->data[10] =  2.66f;     // kRightShoulderYaw
-  _q_ub->data[11] =  3.18f;     // kRightElbow
-  _q_ub->data[12] =  3.01f;     // kRightWistRoll
-  _q_ub->data[13] =  0.4625f;   // kRightWistPitch
-  _q_ub->data[14] =  1.27f;     // kRightWistYaw
-  _q_ub->data[0] =  2.35f;      // kWaistYaw
+  _q_ub->data[0] =  1.57f;     // kLeftShoulderPitch
+  _q_ub->data[1] =  3.4f;      // kLeftShoulderRoll
+  _q_ub->data[2] =  3.01f;     // kLeftShoulderYaw
+  _q_ub->data[3] =  3.18f;     // kLeftElbow
+  _q_ub->data[4] =  2.75f;     // kLeftWistRoll
+  _q_ub->data[5] =  0.4625f;   // kLeftWistPitch
+  _q_ub->data[6] =  1.27f;     // kLeftWistYaw
+  _q_ub->data[7] =  1.57f;     // kRightShoulderPitch
+  _q_ub->data[8] =  0.38f;     // kRightShoulderRoll
+  _q_ub->data[9] =  2.66f;     // kRightShoulderYaw
+  _q_ub->data[10] =  3.18f;     // kRightElbow
+  _q_ub->data[11] =  3.01f;     // kRightWistRoll
+  _q_ub->data[12] =  0.4625f;   // kRightWistPitch
+  _q_ub->data[13] =  1.27f;     // kRightWistYaw
+  //_q_ub->data[0] =  2.35f;      // kWaistYaw
 
 
   fkSolver=std::make_shared<KDL::TreeFkSolverPos_recursive>(_h1_2_tree);
@@ -123,16 +123,16 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::arr
       _q_l->data[i+1] = q.at(i);
       _tau_est_l(i+1) = tau_est.at(i);
     }
-    else if(i<=14){
+    else if(i<=13){
       _q_r->data[i+1-7] = q.at(i);
       _tau_est_r(i+1-7) = tau_est.at(i);
     }
-    else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
-      _q_l->data[0] = q.at(i);
-      _tau_est_l(0) = tau_est.at(i);
-      _q_r->data[0] = q.at(i);
-      _tau_est_r(0) = tau_est.at(i);
-    }
+    // else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
+    //   _q_l->data[0] = q.at(i);
+    //   _tau_est_l(0) = tau_est.at(i);
+    //   _q_r->data[0] = q.at(i);
+    //   _tau_est_r(0) = tau_est.at(i);
+    // }
   }
 
   //Update Jacobians
@@ -155,14 +155,14 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){//FIX JO
     if(i<=6){
       _q_l->data[i+1] = q.at(i);
     }
-    else if(i<=14){
+    else if(i<=13){
       _q_r->data[i+1-7] = q.at(i);
     }
-    else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
-      //First element of left and right arm in this struture is the waist yaw (see if it corresponds to torso)
-      _q_l->data[0] = q.at(i);
-      _q_r->data[0] = q.at(i);
-    }
+    // else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
+    //   //First element of left and right arm in this struture is the waist yaw (see if it corresponds to torso)
+    //   _q_l->data[0] = q.at(i);
+    //   _q_r->data[0] = q.at(i);
+    // }
   }
   //So _q_l = [_q_w, _q_l_0, ...] _q_r = [_q_w, _q_r_0, ...]
   //The Jacobians will be jacobian_l = [J_lw, Jl], jacobian_r = [J_rw, Jr]
@@ -181,14 +181,14 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){//FIX JO
 }
 
 Eigen::MatrixXd H1_2_kdl::get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
-  Eigen::MatrixXd J_u(4,UPPER_LIMB_JOINTS_DIM), J_l(2,7), J_lw(2,1), J_r(2,7), J_rw(2,1), zero;
+  Eigen::MatrixXd J_u(4,UPPER_LIMB_JOINTS_DIM), J_l(2,7), J_r(2,7), zero;
   update_state(q);
   //Both the Jacobian r and l contain 1st column related to torso and next 7 columns 
   //related to the respective arm. jacobian_l = [J_lw, Jl], jacobian_r = [J_rw, Jr]
   //We consider only the first two rows for x and y velocities
-  J_lw = _jacobian_l_eigen.block<2, 1>(0, 0);
+  //J_lw = _jacobian_l_eigen.block<2, 1>(0, 0);
   J_l = _jacobian_l_eigen.block<2, 7>(0, 1);
-  J_rw = _jacobian_r_eigen.block<2, 1>(0, 0);
+  //J_rw = _jacobian_r_eigen.block<2, 1>(0, 0);
   J_r = _jacobian_r_eigen.block<2, 7>(0, 1);
   zero = Eigen::MatrixXd::Zero(2, 7);
   //So, the upper limb Jacobian is 
@@ -196,8 +196,8 @@ Eigen::MatrixXd H1_2_kdl::get_upper_limb_jacobian(std::array<float, UPPER_LIMB_J
         // 0, J_r, J_rw]
   // considering the order of joints variable as q = [q_l; q_r; q_w]
 
-  J_u << J_l, zero, J_lw,
-        zero, J_r, J_rw;
+  J_u << J_l, zero,// J_lw,
+        zero, J_r;// J_rw;
 
   return J_u;
 }
@@ -394,26 +394,26 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> target_l
 
   // q_in has the torso joint as last joint value, but here in kdl tree we have it as first joint value, so we remap
 
-  std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
-    14, // torso_joint
-    0,  // left_shoulder_pitch_joint
-    1,  // left_shoulder_roll_joint
-    2,  // left_shoulder_yaw_joint
-    3,  // left_elbow_joint
-    4,  // left_wrist_roll_joint
-    5,  // left_wrist_pitch_joint
-    6,  // left_wrist_yaw_joint
-    7,  // right_shoulder_pitch_joint
-    8,  // right_shoulder_roll_joint
-    9,  // right_shoulder_yaw_joint
-    10, // right_elbow_joint
-    11, // right_wrist_roll_joint
-    12, // right_wrist_pitch_joint
-    13  // right_wrist_yaw_joint
-  };
+  // std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
+  //   14, // torso_joint
+  //   0,  // left_shoulder_pitch_joint
+  //   1,  // left_shoulder_roll_joint
+  //   2,  // left_shoulder_yaw_joint
+  //   3,  // left_elbow_joint
+  //   4,  // left_wrist_roll_joint
+  //   5,  // left_wrist_pitch_joint
+  //   6,  // left_wrist_yaw_joint
+  //   7,  // right_shoulder_pitch_joint
+  //   8,  // right_shoulder_roll_joint
+  //   9,  // right_shoulder_yaw_joint
+  //   10, // right_elbow_joint
+  //   11, // right_wrist_roll_joint
+  //   12, // right_wrist_pitch_joint
+  //   13  // right_wrist_yaw_joint
+  // };
 
   for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-    q_i(i) = q_feedback[remap[i]];
+    q_i(i) = q_feedback[i];
   }
 
   // std::cout << "q_i: ";
@@ -435,7 +435,7 @@ bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> target_l
   else{
     // Fill output array
     for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
-      q_dot_output[remap[i]]=q_dot_out(i);
+      q_dot_output[i]=q_dot_out(i);
     }
     bool has_nan = std::any_of(q_dot_output.begin(), q_dot_output.end(), [](float x) { return std::isnan(x); });
     if(has_nan){
@@ -485,26 +485,26 @@ bool H1_2_kdl::compute_upper_limb_fk(std::array<float, UPPER_LIMB_JOINTS_DIM> q_
 
   // q_in has the torso joint as last joint value, but here in kdl tree we have it as first joint value, so we remap
 
-  std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
-    14, // torso_joint
-    0,  // left_shoulder_pitch_joint
-    1,  // left_shoulder_roll_joint
-    2,  // left_shoulder_yaw_joint
-    3,  // left_elbow_joint
-    4,  // left_wrist_roll_joint
-    5,  // left_wrist_pitch_joint
-    6,  // left_wrist_yaw_joint
-    7,  // right_shoulder_pitch_joint
-    8,  // right_shoulder_roll_joint
-    9,  // right_shoulder_yaw_joint
-    10, // right_elbow_joint
-    11, // right_wrist_roll_joint
-    12, // right_wrist_pitch_joint
-    13  // right_wrist_yaw_joint
-  };
+  // std::array<int, UPPER_LIMB_JOINTS_DIM> remap = {
+  //   14, // torso_joint
+  //   0,  // left_shoulder_pitch_joint
+  //   1,  // left_shoulder_roll_joint
+  //   2,  // left_shoulder_yaw_joint
+  //   3,  // left_elbow_joint
+  //   4,  // left_wrist_roll_joint
+  //   5,  // left_wrist_pitch_joint
+  //   6,  // left_wrist_yaw_joint
+  //   7,  // right_shoulder_pitch_joint
+  //   8,  // right_shoulder_roll_joint
+  //   9,  // right_shoulder_yaw_joint
+  //   10, // right_elbow_joint
+  //   11, // right_wrist_roll_joint
+  //   12, // right_wrist_pitch_joint
+  //   13  // right_wrist_yaw_joint
+  // };
 
   for (size_t i = 0; i < UPPER_LIMB_JOINTS_DIM; ++i) {
-    q_i(i) = q_in[remap[i]];
+    q_i(i) = q_in[i];
   }
   
   KDL::Frame r_pose;
@@ -585,7 +585,7 @@ bool H1_2_kdl::extractMinimalSubTree(){
 
   return true;
 }
-/*
+
 void H1_2_kdl::extract_joint_names_from_tree() {
   _upper_limb_joint_names.clear();
   
@@ -610,5 +610,5 @@ void H1_2_kdl::extract_joint_names_recursive(const KDL::TreeElement& segment) {
       extract_joint_names_recursive((*child_pair).second);
   }
 }
-*/
+
 
