@@ -314,9 +314,9 @@ int main(int argc, char const *argv[]) {
 
   //TEST PUSHING WHEELCHAIR storing data
   std::shared_ptr<boost::thread> thread1 = std::make_shared<boost::thread>(boost::bind(&Pushing::test_pushing,&h1_pushing));  
-  std::shared_ptr<boost::thread> thread2 = std::make_shared<boost::thread>(boost::bind(&Pushing::store_data,&h1_pushing));  
+  //std::shared_ptr<boost::thread> thread2 = std::make_shared<boost::thread>(boost::bind(&Pushing::store_data,&h1_pushing));  
   thread1->join();
-  thread2->join();
+  //thread2->join();
   
 
   //TEST COM MOTION

@@ -43,7 +43,7 @@ int main(int argc, char const *argv[]){
    
 
 
-
+/*
 
 
     //TEST 1: get end-effector poses
@@ -183,7 +183,7 @@ int main(int argc, char const *argv[]){
 
 
     //////////////////////////////////////////////////////////////////////////
-/*
+
     //TEST 5 Perform fake rotation of right hand
     std::array<float, 7UL> actual_left_ee_pose, actual_right_ee_pose;
     h1_motion_ptr->get_end_effectors_poses(actual_left_ee_pose, actual_right_ee_pose);
@@ -219,6 +219,26 @@ int main(int argc, char const *argv[]){
 
 */
 
+//TEST 6 Admittance control
+std::array<float, 2UL> left_des_force = {0,0};
+std::array<float, 4UL> left_inertia = {1,0,0,1};
+std::array<float, 4UL> left_damping = {1,0,0,1};
+std::array<float, 2UL> right_des_force = {0,0};
+std::array<float, 4UL> right_inertia = {1,0,0,1};
+std::array<float, 4UL> right_damping = {1,0,0,1};
+double dt = 0.01;
 
+while(true){
+    h1_motion_ptr->admittance_control(left_des_force,
+        left_inertia,
+        left_damping,
+        right_des_force,
+        right_inertia,
+        right_damping,
+        dt);
+    usleep(dt * 1e6);
+}
+//Add data storing before performing the test. Perform first test without sending the commands,
+//store only end-effector pose
 
 }
