@@ -255,8 +255,34 @@ Eigen::MatrixXd H1_2_kdl::computeWholeBodyCoGJacobianHumanoid(std::array<float, 
 }
 
 std::array<float, WRENCH_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha){
-  //update state
-  update_state(q, tau_est);
+
+  //Convert to KDL
+  for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
+    if(i<=6){
+      _q_l->data[i+1] = q.at(i);
+      _tau_est_l(i+1) = tau_est.at(i);
+    }
+    else if(i<=13){
+      _q_r->data[i+1-7] = q.at(i);
+      _tau_est_r(i+1-7) = tau_est.at(i);
+    }
+  }
+
+  //Update Jacobians
+    if (_jacobian_l_solver->JntToJac(*_q_l, _jacobian_l) < 0) {
+        std::cerr << "Failed to compute left arm Jacobian!" << std::endl;
+        exit(1);
+    }
+    _jacobian_l_eigen = _jacobian_l.data;
+
+    if (_jacobian_r_solver->JntToJac(*_q_r, _jacobian_r) < 0) {
+        std::cerr << "Failed to compute right arm Jacobian!" << std::endl;
+        exit(1);
+    }
+    _jacobian_r_eigen = _jacobian_r.data;
+
+
+
   //transform torques in forces at ee
   _f_est_l = r_pinv_svd(_jacobian_l_eigen.transpose()) * _tau_est_l;
   _f_est_r = r_pinv_svd(_jacobian_r_eigen.transpose()) * _tau_est_r;
@@ -295,6 +321,31 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
     // Compute the right pseudoinverse
     return svd.matrixV() * S_inv * svd.matrixU().transpose();
 }
+
+void H1_2_kdl::admittance_filter_2d(std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,std::array<float, 2> left_delta_force, 
+                                    std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
+                                    std::array<float, 2> right_velocity, std::array<float, 2> & right_acceleration,std::array<float, 2> right_delta_force, 
+                                    std::array<float, 4> right_inertia, std::array<float, 4> right_damping){
+    //Convert to Eigen
+    Eigen::Vector2d x_dot_l(left_velocity.at(0), left_velocity.at(1));
+    Eigen::Vector2d delta_f_l(left_delta_force.at(0), left_delta_force.at(1));
+    Eigen::Matrix2d M_l, D_l;
+    M_l << left_inertia.at(0), left_inertia.at(1), left_inertia.at(2), left_inertia.at(3);
+    D_l << left_damping.at(0), left_damping.at(1), left_damping.at(2), left_damping.at(3);
+    Eigen::Vector2d x_dot_r(right_velocity.at(0), right_velocity.at(1));
+    Eigen::Vector2d delta_f_r(right_delta_force.at(0), right_delta_force.at(1));
+    Eigen::Matrix2d M_r, D_r;
+    M_r << right_inertia.at(0), right_inertia.at(1), right_inertia.at(2), right_inertia.at(3);
+    D_r << right_damping.at(0), right_damping.at(1), right_damping.at(2), right_damping.at(3);
+
+    //Compute acceleration
+    Eigen::Vector2d x_ddot_l = M_l.inverse()*(delta_f_l - D_l * x_dot_l);
+    left_acceleration = {(float)x_ddot_l(0), (float)x_ddot_l(1)};
+
+    Eigen::Vector2d x_ddot_r = M_r.inverse()*(delta_f_r - D_r * x_dot_r);
+    right_acceleration = {(float)x_ddot_r(0), (float)x_ddot_r(1)};
+
+  }
 
 
 bool H1_2_kdl::compute_upper_limb_ikin(std::array<float, CARTESIAN_DIM> target_left_ee_pose, 

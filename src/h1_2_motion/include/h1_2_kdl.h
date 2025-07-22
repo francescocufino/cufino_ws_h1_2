@@ -102,10 +102,35 @@ class H1_2_kdl{
     std::array<float, WRENCH_DIM> compute_ee_forces(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est, float alpha);
     Eigen::MatrixXd get_upper_limb_jacobian(std::array<float, UPPER_LIMB_JOINTS_DIM> q);
     Eigen::MatrixXd computeWholeBodyCoGJacobianHumanoid(std::array<float, JOINTS_DIM> q);
-  
-    //std::array<float, UPPER_LIMB_JOINTS_DIM> compute_ikin(std::array<float, UPPER_LIMB_JOINTS_DIM> q_in, std::array<float, CARTESIAN_DIM> x_e);
-    std::array<float, CARTESIAN_DIM> admittance_control(std::array<float, CARTESIAN_DIM> x_e, std::array<float, CARTESIAN_DIM> f_ext);
-    void set_admittance_gains(Eigen::MatrixXd M_d,  Eigen::MatrixXd D_d,  Eigen::MatrixXd K_d);
+
+    /**
+     * @brief Two-dimensional admittance filter for force tracking with infinite compliance. 
+     * This function receives as input the force tracking error, 
+     * (desired force - actual force) and the computed reference velocity at the previous step. As output, the function computes the reference acceleration 
+     * according to the admittance equation to regulate
+     * the force, with infinite compliance, without position reference. The output is given by the equation inv(M_d) * (f_d - f - D * x_dot)
+     * 
+     * @param left_velocity Computed left end-effector reference velocity at previous step. Coordinates order: 
+     * [VelocityX, VelocityY]
+     * @param left_delta_force Left end-effector force error, desired force - actual force. Coordinates order: 
+     * [ForceX, ForceY]
+     * @param left_inertia Desired left end-effector inertia Matrix. This has to be positive definite. Order 
+     * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
+     * @param left_damping Desired left end-effector Damping Matrix. This has to be positive definite. Order 
+     * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param right_velocity Computed right end-effector reference velocity at previous step. Coordinates order: 
+     * [VelocityX, VelocityY]
+     * @param right_delta_force Right end-effector force error, desired force - actual force. Coordinates order: 
+     * [ForceX, ForceY]
+     * @param right_inertia Desired right end-effector inertia Matrix. This has to be positive definite. Order 
+     * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
+     * @param right_damping Desired right end-effector Damping Matrix. This has to be positive definite. Order 
+     * [DampingXX, DampingXY, DampingYX, DampingYY]
+     */
+      void admittance_filter_2d(std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,std::array<float, 2> left_delta_force, 
+                                              std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
+                                              std::array<float, 2> right_velocity, std::array<float, 2> & right_acceleration,std::array<float, 2> right_delta_force, 
+                                              std::array<float, 4> right_inertia, std::array<float, 4> right_damping);
 
     /**
      * @brief Performs the upper limb inverse kinematics

@@ -117,6 +117,16 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
 
+    std::array<float, 2> x_l_dot_adm{};
+    std::array<float, 2> x_l_adm{};
+
+    std::array<float, 2> x_r_dot_adm{};
+    std::array<float, 2> x_r_adm{};
+
+    bool init_adm = false;
+
+
+
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_lb{      // Joints limits (hard-coded)
       -3.14f,    // kLeftShoulderPitch
       -0.38f,    // kLeftShoulderRoll
@@ -324,6 +334,26 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
      * WaistYaw
      */
     std::array<float, UPPER_LIMB_JOINTS_DIM> get_est_torques();
+
+    /**
+     * @brief Two-dimensional admittance control for force tracking with infinite compliance. 
+     * 
+     * @param left_des_force Desired left end-effector force. Coordinates order: 
+     * [ForceX, ForceY]
+     * @param left_inertia Desired left end-effector inertia Matrix. This has to be positive definite. Order 
+     * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
+     * @param left_damping Desired left end-effector Damping Matrix. This has to be positive definite. Order 
+     * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param right_des_force Desired left end-effector force. Coordinates order: 
+     * [ForceX, ForceY]
+     * @param right_inertia Desired right end-effector inertia Matrix. This has to be positive definite. Order 
+     * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
+     * @param right_damping Desired right end-effector Damping Matrix. This has to be positive definite. Order 
+     * [DampingXX, DampingXY, DampingYX, DampingYY]
+     */
+    void admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
+                            std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,
+                            double dt);
 
 
   };

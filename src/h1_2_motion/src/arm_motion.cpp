@@ -424,6 +424,64 @@ void Arm_motion::stop_arms(){
   //store_data();
 }
 
+void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
+                                    std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,
+                                    double dt){
+
+  std::array<float, CARTESIAN_DIM> left_ee_pos;
+  std::array<float, CARTESIAN_DIM> right_ee_pos;
+  std::array<float, 6> left_ee_twist;
+  std::array<float, 6> right_ee_twist;
+
+  //Initialize admittance
+  if(!init_adm){
+    get_end_effectors_poses(left_ee_pos, right_ee_pos);
+    x_l_adm = {left_ee_pos.at(0), left_ee_pos.at(1)};
+    x_r_adm = {right_ee_pos.at(0), right_ee_pos.at(1)};
+    init_adm=true;
+  }                                      
+  //Get left and right force
+  std::array<float, 12UL> force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1);
+  std::array<float, 2> left_force={force.at(0), force.at(1)};
+  std::array<float, 2> right_force={force.at(6), force.at(7)};
+
+  std::array<float, 2> left_delta_force;
+  std::array<float, 2> right_delta_force;
+
+  //Compute force error
+  for (int i=0; i<left_delta_force.size(); i++){
+    left_delta_force.at(i) = left_des_force.at(i) - left_force.at(i);
+    right_delta_force.at(i) = right_des_force.at(i) - right_force.at(i);
+  }
+  
+  //Get resulting accelerations from admittance filter
+  std::array<float, 2> x_l_ddot_adm = {};
+  std::array<float, 2> x_r_ddot_adm = {};
+  h1_2_kdl.admittance_filter_2d(x_l_dot_adm,x_l_ddot_adm,left_delta_force, left_inertia, left_damping,
+                                x_r_dot_adm,x_r_ddot_adm,right_delta_force, right_inertia, right_damping);
+  
+  //Integrate
+  for(int i=0; i<x_l_dot_adm.size(); i++){
+    x_l_dot_adm.at(i) = x_l_dot_adm.at(i) + x_l_ddot_adm.at(i) * dt;
+    x_r_dot_adm.at(i) = x_r_dot_adm.at(i) + x_r_ddot_adm.at(i) * dt;
+
+    x_l_adm.at(i) = x_l_adm.at(i) + x_l_dot_adm.at(i) * dt;
+    x_r_adm.at(i) = x_r_adm.at(i) + x_r_dot_adm.at(i) * dt;
+
+  }
+  //Update reference position and twist
+  left_ee_pos.at(0) = x_l_adm.at(0); left_ee_pos.at(1) = x_l_adm.at(1); 
+  right_ee_pos.at(0) = x_r_adm.at(0); right_ee_pos.at(1) = x_r_adm.at(1); 
+
+  left_ee_twist.at(0) = x_l_dot_adm.at(0); left_ee_twist.at(1) = x_l_dot_adm.at(1); 
+  right_ee_twist.at(0) = x_r_dot_adm.at(0); right_ee_twist.at(1) = x_r_dot_adm.at(1); 
+
+  set_end_effector_targets(left_ee_pos, right_ee_pos, left_ee_twist, right_ee_twist, dt);
+
+  
+}
+
+
 std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_angles(){
   while(!first_cb) {std::this_thread::sleep_for(sleep_time);}
   std::array<float, UPPER_LIMB_JOINTS_DIM> q{};
