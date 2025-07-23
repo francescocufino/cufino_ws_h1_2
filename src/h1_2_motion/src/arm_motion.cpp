@@ -342,6 +342,8 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     right_ee_actual.push_back(right_ee);
     left_twist_ee_cmd.push_back(target_left_ee_twist);
     right_twist_ee_cmd.push_back(target_right_ee_twist);
+    force_ee.push_back(h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1));
+
 
     return true;
   }
@@ -560,6 +562,8 @@ void Arm_motion::store_data(){
   writeCSV("../src/h1_2_demo/output/right_ee_actual.csv", right_ee_actual);
   writeCSV("../src/h1_2_demo/output/left_twist_ee_cmd.csv", left_twist_ee_cmd);
   writeCSV("../src/h1_2_demo/output/right_twist_ee_cmd.csv", right_twist_ee_cmd);
+  writeCSV("../src/h1_2_demo/output/force_ee.csv", force_ee);
+
 
 }
 

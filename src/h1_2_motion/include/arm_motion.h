@@ -209,6 +209,8 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::vector<std::array<float, CARTESIAN_DIM>> right_ee_actual;
     std::vector<std::array<float, 6>> left_twist_ee_cmd;
     std::vector<std::array<float, 6>> right_twist_ee_cmd;
+    std::vector<std::array<float, 12>> force_ee;
+
 
     //Save data to csv for test move_ee_linear
     template <size_t N>
@@ -336,7 +338,8 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::array<float, UPPER_LIMB_JOINTS_DIM> get_est_torques();
 
     /**
-     * @brief Two-dimensional admittance control for force tracking with infinite compliance. 
+     * @brief Two-dimensional admittance control for force tracking with infinite compliance. This function has to be called in a loop, running at a 
+     * period dt.
      * 
      * @param left_des_force Desired left end-effector force. Coordinates order: 
      * [ForceX, ForceY]
@@ -350,6 +353,7 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
      * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
      * @param right_damping Desired right end-effector Damping Matrix. This has to be positive definite. Order 
      * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param dt Period of the control loop in seconds
      */
     void admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
                             std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,

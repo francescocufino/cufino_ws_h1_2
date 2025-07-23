@@ -12,6 +12,7 @@ files = {
     'right_ee_actual.csv',          'Right End Effector Actual';
     'left_twist_ee_cmd.csv',        'Left Twist EE Command';
     'right_twist_ee_cmd.csv',       'Right Twist EE Command'
+    'force_ee.csv',                 'End-effector forces'
 };
 
 % Loop over each file
