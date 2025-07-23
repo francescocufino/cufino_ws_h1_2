@@ -326,7 +326,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     // Set also dq????
 
     //FAKE FEEDBACK, NOT SETTING THE POSITION, THEN UNCOMMENT
-    //set_upper_limb_joints(q_cmd_ikin);
+    set_upper_limb_joints(q_cmd_ikin);
 
     //Get actual quantities for test
     std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
@@ -342,7 +342,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     right_ee_actual.push_back(right_ee);
     left_twist_ee_cmd.push_back(target_left_ee_twist);
     right_twist_ee_cmd.push_back(target_right_ee_twist);
-    force_ee.push_back(h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1));
+    force_ee.push_back(force);
 
 
     return true;
@@ -430,38 +430,56 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
                                     std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping, std::array<float, 4> right_stiffness,
                                     double dt){
 
-  std::array<float, CARTESIAN_DIM> left_ee_pos;
-  std::array<float, CARTESIAN_DIM> right_ee_pos;
-  std::array<float, 6> left_ee_twist;
-  std::array<float, 6> right_ee_twist;
-
-  std::array<float, 2> x_eq_l;
-  std::array<float, 2> x_eq_r;
-
 
   //Initialize admittance
   if(!init_adm){
-    get_end_effectors_poses(left_ee_pos, right_ee_pos);
-    x_l_adm = {left_ee_pos.at(0), left_ee_pos.at(1)};
-    x_r_adm = {right_ee_pos.at(0), right_ee_pos.at(1)};
+    get_end_effectors_poses(left_adm_pos_cmd, right_adm_pos_cmd);
+    x_l_adm = {left_adm_pos_cmd.at(0), left_adm_pos_cmd.at(1)};
+    x_r_adm = {right_adm_pos_cmd.at(0), right_adm_pos_cmd.at(1)};
     x_eq_l = x_l_adm;
     x_eq_r = x_r_adm;
+    //update_force_bias();
     init_adm=true;
   }   
                                    
   //Get left and right force
-  std::array<float, 12UL> force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1);
+  force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 0.2);
+
+  //subtract bias
+  force.at(0) = force.at(0) - force_bias.at(0);
+  force.at(1) = force.at(1) - force_bias.at(1);
+  force.at(6) = force.at(6) - force_bias.at(6);
+  force.at(7) = force.at(7) - force_bias.at(7);
+
+
+  /////fake force feedback
+    std::array<float, CARTESIAN_DIM> left_actual_ee;
+    std::array<float, CARTESIAN_DIM> right_actual_ee;
+  
+    get_end_effectors_poses(left_actual_ee, right_actual_ee);
+  
+    float k_f = 2000;
+  
+    force.at(0) = k_f*(x_l_adm.at(0) - left_actual_ee.at(0));
+    force.at(1) =  k_f*(x_l_adm.at(1) - left_actual_ee.at(1));
+    force.at(6) = k_f*(x_r_adm.at(0) - right_actual_ee.at(0));
+    force.at(7) = k_f*(x_r_adm.at(1) - right_actual_ee.at(1));
+  ////////
+
 
   std::array<float, 2> left_force={force.at(0), force.at(1)};
   std::array<float, 2> right_force={force.at(6), force.at(7)};
+
+
+
 
   std::array<float, 2> left_delta_force;
   std::array<float, 2> right_delta_force;
 
   //Compute force error
   for (int i=0; i<left_delta_force.size(); i++){
-    left_delta_force.at(i) = left_des_force.at(i) - left_force.at(i);
-    right_delta_force.at(i) = right_des_force.at(i) - right_force.at(i);
+    left_delta_force.at(i) = (left_des_force.at(i) - left_force.at(i));
+    right_delta_force.at(i) = (right_des_force.at(i) - right_force.at(i));
   }
 
 
@@ -485,16 +503,41 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
 
   }
   //Update reference position and twist
-  left_ee_pos.at(0) = x_l_adm.at(0); left_ee_pos.at(1) = x_l_adm.at(1); 
-  right_ee_pos.at(0) = x_r_adm.at(0); right_ee_pos.at(1) = x_r_adm.at(1); 
+  left_adm_pos_cmd.at(0) = x_l_adm.at(0); left_adm_pos_cmd.at(1) = x_l_adm.at(1); 
+  right_adm_pos_cmd.at(0) = x_r_adm.at(0); right_adm_pos_cmd.at(1) = x_r_adm.at(1); 
 
-  left_ee_twist.at(0) = x_l_dot_adm.at(0); left_ee_twist.at(1) = x_l_dot_adm.at(1); 
-  right_ee_twist.at(0) = x_r_dot_adm.at(0); right_ee_twist.at(1) = x_r_dot_adm.at(1); 
+  left_adm_twist_cmd.at(0) = x_l_dot_adm.at(0); left_adm_twist_cmd.at(1) = x_l_dot_adm.at(1); 
+  right_adm_twist_cmd.at(0) = x_r_dot_adm.at(0); right_adm_twist_cmd.at(1) = x_r_dot_adm.at(1); 
 
-  set_end_effector_targets(left_ee_pos, right_ee_pos, left_ee_twist, right_ee_twist, dt);
+  set_end_effector_targets(left_adm_pos_cmd, right_adm_pos_cmd, left_adm_twist_cmd, right_adm_twist_cmd, dt);
 
 
   
+}
+
+void Arm_motion::update_force_bias(){
+  double t = 0;
+  double t_f = 5;
+  std::array<float, 12> measured_force;
+
+  //Initialize bias
+  force_bias = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1);
+
+  double alpha = 0.5;
+  std::cout << "Updating bias\n";
+  while(t<=t_f && !stop){
+    measured_force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1);
+    
+    //update bias with a moving average
+    for(int i=0; i<force_bias.size(); i++)
+      force_bias.at(i) = alpha*measured_force.at(i) + (1- alpha)*force_bias.at(i);
+  
+    t = t + control_dt;
+    usleep(control_dt*1e6);
+  }
+  std::cout << "Updated bias\n";
+  std::cout << force_bias.at(0) << ' ' << force_bias.at(1) << ' '<< force_bias.at(6) << ' '<< force_bias.at(7) << "\n";
+
 }
 
 

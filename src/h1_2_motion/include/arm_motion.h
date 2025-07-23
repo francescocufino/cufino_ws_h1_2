@@ -113,15 +113,29 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     
     const std::array<float, UPPER_LIMB_JOINTS_DIM> init_pos{0.f, 0.3,  0.f, 0, 0, 0, 0,
                                     0.f, -0.3, 0.f, 0, 0, 0, 0};
-                                    //Joints command
+    //Joints command variables
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd{};
     std::array<float, UPPER_LIMB_JOINTS_DIM> q_cmd_ikin{};
 
+    //Admittance control variables
     std::array<float, 2> x_l_dot_adm{};
     std::array<float, 2> x_l_adm{};
+    std::array<float, 2> x_eq_l{};
+    std::array<float, CARTESIAN_DIM> left_adm_pos_cmd{};
+    std::array<float, 6> left_adm_twist_cmd{};
 
     std::array<float, 2> x_r_dot_adm{};
     std::array<float, 2> x_r_adm{};
+    std::array<float, 2> x_eq_r{};
+    std::array<float, CARTESIAN_DIM> right_adm_pos_cmd{};
+    std::array<float, 6> right_adm_twist_cmd{};
+
+    //Force bias
+    std::array<float, 12> force_bias{};
+    std::array<float, 12UL> force;
+
+
+
 
     bool init_adm = false;
 
@@ -368,6 +382,11 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     */
     void stop_admittance(){init_adm = false; store_data();}
 
+
+    /**
+     * @brief Compute force bias 
+    */
+    void update_force_bias(); 
     bool get_stop_status(){return stop;}
 
 
