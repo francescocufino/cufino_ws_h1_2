@@ -110,27 +110,43 @@ class H1_2_kdl{
      * according to the admittance equation to regulate
      * the force, with infinite compliance, without position reference. The output is given by the equation inv(M_d) * (f_d - f - D * x_dot)
      * 
+     * @param left_position Computed left end-effector reference position at previous step. Coordinates order: 
+     * [PositionX, PositionY]
      * @param left_velocity Computed left end-effector reference velocity at previous step. Coordinates order: 
      * [VelocityX, VelocityY]
      * @param left_delta_force Left end-effector force error, desired force - actual force. Coordinates order: 
      * [ForceX, ForceY]
+     * @param left_eq_position Equilibrium left end-effector position. Coordinates order: 
+     * [PositionX, PositionY]
      * @param left_inertia Desired left end-effector inertia Matrix. This has to be positive definite. Order 
      * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
      * @param left_damping Desired left end-effector Damping Matrix. This has to be positive definite. Order 
      * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param left_stiffness Desired left end-effector Stiffness Matrix. This has to be positive definite. Order 
+     * [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY]
+     * @param right_position Computed right end-effector reference position at previous step. Coordinates order: 
+     * [PositionX, PositionY]
      * @param right_velocity Computed right end-effector reference velocity at previous step. Coordinates order: 
      * [VelocityX, VelocityY]
      * @param right_delta_force Right end-effector force error, desired force - actual force. Coordinates order: 
      * [ForceX, ForceY]
+     * @param right_eq_position Equilibrium right end-effector position. Coordinates order: 
+     * [PositionX, PositionY]
      * @param right_inertia Desired right end-effector inertia Matrix. This has to be positive definite. Order 
      * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
      * @param right_damping Desired right end-effector Damping Matrix. This has to be positive definite. Order 
      * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param right_stiffness Desired right end-effector Stiffness Matrix. This has to be positive definite. Order 
+     * [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY]
      */
-      void admittance_filter_2d(std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,std::array<float, 2> left_delta_force, 
-                                              std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
-                                              std::array<float, 2> right_velocity, std::array<float, 2> & right_acceleration,std::array<float, 2> right_delta_force, 
-                                              std::array<float, 4> right_inertia, std::array<float, 4> right_damping);
+      void admittance_filter_2d(std::array<float, 2> left_position, std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,
+                                  std::array<float, 2> left_delta_force, 
+                                  std::array<float, 2> left_eq_position, 
+                                  std::array<float, 4> left_inertia, std::array<float, 4> left_damping, std::array<float, 4> left_stiffness,
+                                  std::array<float, 2> right_position,
+                                  std::array<float, 2> right_velocity, std::array<float, 2> & right_acceleration,std::array<float, 2> right_delta_force, 
+                                  std::array<float, 2> right_eq_position, 
+                                  std::array<float, 4> right_inertia, std::array<float, 4> right_damping, std::array<float, 4> right_stiffness);
 
     /**
      * @brief Performs the upper limb inverse kinematics

@@ -347,16 +347,20 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
      * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
      * @param left_damping Desired left end-effector Damping Matrix. This has to be positive definite. Order 
      * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param left_stiffness Desired left end-effector Stiffness Matrix. This has to be positive definite. Order 
+     * [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY]
      * @param right_des_force Desired left end-effector force. Coordinates order: 
      * [ForceX, ForceY]
      * @param right_inertia Desired right end-effector inertia Matrix. This has to be positive definite. Order 
      * [inertiaXX, inertiaXY, inertiaYX, inertiaYY]
      * @param right_damping Desired right end-effector Damping Matrix. This has to be positive definite. Order 
      * [DampingXX, DampingXY, DampingYX, DampingYY]
+     * @param right_stiffness Desired right end-effector Stiffness Matrix. This has to be positive definite. Order 
+     * [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY]
      * @param dt Period of the control loop in seconds
      */
-    void admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
-                            std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,
+    void admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping, std::array<float, 4> left_stiffness,
+                            std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping, std::array<float, 4> right_stiffness,
                             double dt);
 
     /**

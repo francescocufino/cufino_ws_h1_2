@@ -426,8 +426,8 @@ void Arm_motion::stop_arms(){
   //store_data();
 }
 
-void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
-                                    std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,
+void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping, std::array<float, 4> left_stiffness,
+                                    std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping, std::array<float, 4> right_stiffness,
                                     double dt){
 
   std::array<float, CARTESIAN_DIM> left_ee_pos;
@@ -435,11 +435,17 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
   std::array<float, 6> left_ee_twist;
   std::array<float, 6> right_ee_twist;
 
+  std::array<float, 2> x_eq_l;
+  std::array<float, 2> x_eq_r;
+
+
   //Initialize admittance
   if(!init_adm){
     get_end_effectors_poses(left_ee_pos, right_ee_pos);
     x_l_adm = {left_ee_pos.at(0), left_ee_pos.at(1)};
     x_r_adm = {right_ee_pos.at(0), right_ee_pos.at(1)};
+    x_eq_l = x_l_adm;
+    x_eq_r = x_r_adm;
     init_adm=true;
   }   
                                    
@@ -463,8 +469,10 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
   //Get resulting accelerations from admittance filter
   std::array<float, 2> x_l_ddot_adm = {};
   std::array<float, 2> x_r_ddot_adm = {};
-  h1_2_kdl.admittance_filter_2d(x_l_dot_adm,x_l_ddot_adm,left_delta_force, left_inertia, left_damping,
-                                x_r_dot_adm,x_r_ddot_adm,right_delta_force, right_inertia, right_damping);
+  //h1_2_kdl.admittance_filter_2d(x_l_dot_adm,x_l_ddot_adm,left_delta_force, left_inertia, left_damping,
+  //                              x_r_dot_adm,x_r_ddot_adm,right_delta_force, right_inertia, right_damping);
+  h1_2_kdl.admittance_filter_2d(x_l_adm, x_l_dot_adm, x_l_ddot_adm, left_delta_force, x_eq_l, left_inertia, left_damping, left_stiffness,
+                                x_r_adm, x_r_dot_adm, x_r_ddot_adm, right_delta_force, x_eq_r, right_inertia, right_damping, right_stiffness);
   
 
   //Integrate

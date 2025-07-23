@@ -224,23 +224,25 @@ int main(int argc, char const *argv[]){
 std::array<float, 2UL> left_des_force = {0,0};
 std::array<float, 4UL> left_inertia = {1,0,0,1};
 std::array<float, 4UL> left_damping = {1,0,0,1};
+std::array<float, 4UL> left_stiffness = {1,0,0,1};
 std::array<float, 2UL> right_des_force = {0,0};
 std::array<float, 4UL> right_inertia = {1,0,0,1};
 std::array<float, 4UL> right_damping = {1,0,0,1};
+std::array<float, 4UL> right_stiffness = {1,0,0,1};
+
 double dt = 0.01;
 
 while(true && !h1_motion_ptr->get_stop_status()){
     h1_motion_ptr->admittance_control(left_des_force,
         left_inertia,
         left_damping,
+        left_stiffness,
         right_des_force,
         right_inertia,
         right_damping,
+        right_stiffness,
         dt);
     usleep(dt * 1e6);
 }
-
-//Add data storing before performing the test. Perform first test without sending the commands,
-//store only end-effector pose
 
 }

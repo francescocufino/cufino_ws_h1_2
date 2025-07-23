@@ -322,27 +322,38 @@ Eigen::MatrixXd H1_2_kdl::r_pinv_svd(Eigen::MatrixXd A, double tol){
     return svd.matrixV() * S_inv * svd.matrixU().transpose();
 }
 
-void H1_2_kdl::admittance_filter_2d(std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,std::array<float, 2> left_delta_force, 
-                                    std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
+void H1_2_kdl::admittance_filter_2d(std::array<float, 2> left_position, std::array<float, 2> left_velocity, std::array<float, 2> & left_acceleration,
+                                    std::array<float, 2> left_delta_force, 
+                                    std::array<float, 2> left_eq_position, 
+                                    std::array<float, 4> left_inertia, std::array<float, 4> left_damping, std::array<float, 4> left_stiffness,
+                                    std::array<float, 2> right_position,
                                     std::array<float, 2> right_velocity, std::array<float, 2> & right_acceleration,std::array<float, 2> right_delta_force, 
-                                    std::array<float, 4> right_inertia, std::array<float, 4> right_damping){
+                                    std::array<float, 2> right_eq_position, 
+                                    std::array<float, 4> right_inertia, std::array<float, 4> right_damping, std::array<float, 4> right_stiffness){
     //Convert to Eigen
+    Eigen::Vector2d x_l(left_position.at(0), left_position.at(1));
     Eigen::Vector2d x_dot_l(left_velocity.at(0), left_velocity.at(1));
     Eigen::Vector2d delta_f_l(left_delta_force.at(0), left_delta_force.at(1));
-    Eigen::Matrix2d M_l, D_l;
+    Eigen::Vector2d x_eq_l(left_eq_position.at(0), left_eq_position.at(1));
+    Eigen::Matrix2d M_l, D_l, K_l;
     M_l << left_inertia.at(0), left_inertia.at(1), left_inertia.at(2), left_inertia.at(3);
     D_l << left_damping.at(0), left_damping.at(1), left_damping.at(2), left_damping.at(3);
+    K_l << left_stiffness.at(0), left_stiffness.at(1), left_stiffness.at(2), left_stiffness.at(3);
+
+    Eigen::Vector2d x_r(right_position.at(0), right_position.at(1));
     Eigen::Vector2d x_dot_r(right_velocity.at(0), right_velocity.at(1));
     Eigen::Vector2d delta_f_r(right_delta_force.at(0), right_delta_force.at(1));
-    Eigen::Matrix2d M_r, D_r;
+    Eigen::Vector2d x_eq_r(right_eq_position.at(0), right_eq_position.at(1));
+    Eigen::Matrix2d M_r, D_r, K_r;
     M_r << right_inertia.at(0), right_inertia.at(1), right_inertia.at(2), right_inertia.at(3);
     D_r << right_damping.at(0), right_damping.at(1), right_damping.at(2), right_damping.at(3);
+    K_r << right_stiffness.at(0), right_stiffness.at(1), right_stiffness.at(2), right_stiffness.at(3);
 
     //Compute acceleration
-    Eigen::Vector2d x_ddot_l = M_l.inverse()*(delta_f_l - D_l * x_dot_l);
+    Eigen::Vector2d x_ddot_l = M_l.inverse()*(delta_f_l - D_l * x_dot_l - K_l * (x_l - x_eq_l));
     left_acceleration = {(float)x_ddot_l(0), (float)x_ddot_l(1)};
 
-    Eigen::Vector2d x_ddot_r = M_r.inverse()*(delta_f_r - D_r * x_dot_r);
+    Eigen::Vector2d x_ddot_r = M_r.inverse()*(delta_f_r - D_r * x_dot_r - K_r * (x_r - x_eq_r));
     right_acceleration = {(float)x_ddot_r(0), (float)x_ddot_r(1)};
 
   }
