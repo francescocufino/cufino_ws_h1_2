@@ -339,7 +339,7 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
 
     /**
      * @brief Two-dimensional admittance control for force tracking with infinite compliance. This function has to be called in a loop, running at a 
-     * period dt.
+     * period dt. After the loop ends, the function stop_admittance() has to be called
      * 
      * @param left_des_force Desired left end-effector force. Coordinates order: 
      * [ForceX, ForceY]
@@ -358,6 +358,13 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     void admittance_control(std::array<float, 2> left_des_force, std::array<float, 4> left_inertia, std::array<float, 4> left_damping,
                             std::array<float, 2> right_des_force, std::array<float, 4> right_inertia, std::array<float, 4> right_damping,
                             double dt);
+
+    /**
+     * @brief Call this function after the loop admittance control, to reset its initialization.
+    */
+    void stop_admittance(){init_adm = false; store_data();}
+
+    bool get_stop_status(){return stop;}
 
 
   };

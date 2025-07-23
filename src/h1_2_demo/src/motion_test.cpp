@@ -6,7 +6,8 @@
 std::unique_ptr<Arm_motion> h1_motion_ptr; 
 
 void stop(int){
-    h1_motion_ptr->stop_arms();
+    h1_motion_ptr->stop_admittance();
+    h1_motion_ptr->stop_arms(); //Eventually set actual joint pos
     return;
 }
 
@@ -228,7 +229,7 @@ std::array<float, 4UL> right_inertia = {1,0,0,1};
 std::array<float, 4UL> right_damping = {1,0,0,1};
 double dt = 0.01;
 
-while(true){
+while(true && !h1_motion_ptr->get_stop_status()){
     h1_motion_ptr->admittance_control(left_des_force,
         left_inertia,
         left_damping,
@@ -238,6 +239,7 @@ while(true){
         dt);
     usleep(dt * 1e6);
 }
+
 //Add data storing before performing the test. Perform first test without sending the commands,
 //store only end-effector pose
 

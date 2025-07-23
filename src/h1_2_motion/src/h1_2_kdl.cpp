@@ -120,12 +120,12 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q, std::arr
   //Update joints and torques
   for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     if(i<=6){
-      _q_l->data[i+1] = q.at(i);
-      _tau_est_l(i+1) = tau_est.at(i);
+      _q_l->data[i] = q.at(i);
+      _tau_est_l(i) = tau_est.at(i);
     }
-    else if(i<=13){
-      _q_r->data[i+1-7] = q.at(i);
-      _tau_est_r(i+1-7) = tau_est.at(i);
+    else {
+      _q_r->data[i-7] = q.at(i);
+      _tau_est_r(i-7) = tau_est.at(i);
     }
     // else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
     //   _q_l->data[0] = q.at(i);
@@ -153,10 +153,10 @@ void H1_2_kdl::update_state(std::array<float, UPPER_LIMB_JOINTS_DIM> q){//FIX JO
   //Update joints and torques
   for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     if(i<=6){
-      _q_l->data[i+1] = q.at(i);
+      _q_l->data[i] = q.at(i);
     }
-    else if(i<=13){
-      _q_r->data[i+1-7] = q.at(i);
+    else {
+      _q_r->data[i-7] = q.at(i);
     }
     // else{//UNDERSTAND IF THIS IS THE TORSO AS EXPECTED !!!!!!
     //   //First element of left and right arm in this struture is the waist yaw (see if it corresponds to torso)
@@ -259,12 +259,12 @@ std::array<float, WRENCH_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPE
   //Convert to KDL
   for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
     if(i<=6){
-      _q_l->data[i+1] = q.at(i);
-      _tau_est_l(i+1) = tau_est.at(i);
+      _q_l->data[i] = q.at(i);
+      _tau_est_l(i) = tau_est.at(i);
     }
-    else if(i<=13){
-      _q_r->data[i+1-7] = q.at(i);
-      _tau_est_r(i+1-7) = tau_est.at(i);
+    else {
+      _q_r->data[i-7] = q.at(i);
+      _tau_est_r(i-7) = tau_est.at(i);
     }
   }
 
@@ -284,8 +284,8 @@ std::array<float, WRENCH_DIM> H1_2_kdl::compute_ee_forces(std::array<float, UPPE
 
 
   //transform torques in forces at ee
-  _f_est_l = r_pinv_svd(_jacobian_l_eigen.transpose()) * _tau_est_l;
-  _f_est_r = r_pinv_svd(_jacobian_r_eigen.transpose()) * _tau_est_r;
+  _f_est_l = - r_pinv_svd(_jacobian_l_eigen.transpose()) * _tau_est_l;
+  _f_est_r = - r_pinv_svd(_jacobian_r_eigen.transpose()) * _tau_est_r;
   //filter forces (after first iteration)
   // if(first_force_comput) {
   // _f_est_l = alpha*_f_est_l + (1-alpha)*_f_est_l_old;

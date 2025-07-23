@@ -326,7 +326,7 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     // Set also dq????
 
     //FAKE FEEDBACK, NOT SETTING THE POSITION, THEN UNCOMMENT
-    set_upper_limb_joints(q_cmd_ikin);
+    //set_upper_limb_joints(q_cmd_ikin);
 
     //Get actual quantities for test
     std::array<float, UPPER_LIMB_JOINTS_DIM> q = get_angles();
@@ -441,9 +441,11 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
     x_l_adm = {left_ee_pos.at(0), left_ee_pos.at(1)};
     x_r_adm = {right_ee_pos.at(0), right_ee_pos.at(1)};
     init_adm=true;
-  }                                      
+  }   
+                                   
   //Get left and right force
   std::array<float, 12UL> force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 1);
+
   std::array<float, 2> left_force={force.at(0), force.at(1)};
   std::array<float, 2> right_force={force.at(6), force.at(7)};
 
@@ -455,6 +457,8 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
     left_delta_force.at(i) = left_des_force.at(i) - left_force.at(i);
     right_delta_force.at(i) = right_des_force.at(i) - right_force.at(i);
   }
+
+
   
   //Get resulting accelerations from admittance filter
   std::array<float, 2> x_l_ddot_adm = {};
@@ -462,6 +466,7 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
   h1_2_kdl.admittance_filter_2d(x_l_dot_adm,x_l_ddot_adm,left_delta_force, left_inertia, left_damping,
                                 x_r_dot_adm,x_r_ddot_adm,right_delta_force, right_inertia, right_damping);
   
+
   //Integrate
   for(int i=0; i<x_l_dot_adm.size(); i++){
     x_l_dot_adm.at(i) = x_l_dot_adm.at(i) + x_l_ddot_adm.at(i) * dt;
@@ -479,6 +484,7 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
   right_ee_twist.at(0) = x_r_dot_adm.at(0); right_ee_twist.at(1) = x_r_dot_adm.at(1); 
 
   set_end_effector_targets(left_ee_pos, right_ee_pos, left_ee_twist, right_ee_twist, dt);
+
 
   
 }
