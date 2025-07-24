@@ -1,12 +1,12 @@
-<map id="h1_2_motion/src/hand_motion.cpp" name="h1_2_motion/src/hand_motion.cpp">
-<area shape="rect" id="node1" title="This contains the implementation of functions for basic inspire hands motion." alt="" coords="823,5,989,47"/>
-<area shape="rect" id="node2" href="$hand__motion_8h.html" title="Provides functions and classes for basic inspire hands motion." alt="" coords="847,95,965,121"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,177,236,203"/>
-<area shape="rect" id="node4" title=" " alt="" coords="261,177,495,203"/>
-<area shape="rect" id="node5" title=" " alt="" coords="520,169,692,211"/>
-<area shape="rect" id="node6" title=" " alt="" coords="717,169,895,211"/>
-<area shape="rect" id="node7" title=" " alt="" coords="920,169,1095,211"/>
-<area shape="rect" id="node8" title=" " alt="" coords="1119,177,1269,203"/>
-<area shape="rect" id="node9" title=" " alt="" coords="1293,177,1417,203"/>
-<area shape="rect" id="node10" title=" " alt="" coords="1442,177,1498,203"/>
+<map id="src/hand_motion.cpp" name="src/hand_motion.cpp">
+<area shape="rect" id="node1" title="This contains the implementation of functions for basic inspire hands motion." alt="" coords="827,5,985,32"/>
+<area shape="rect" id="node2" href="$hand__motion_8h.html" title="Provides functions and classes for basic inspire hands motion." alt="" coords="847,80,965,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,162,236,189"/>
+<area shape="rect" id="node4" title=" " alt="" coords="261,162,495,189"/>
+<area shape="rect" id="node5" title=" " alt="" coords="520,155,692,196"/>
+<area shape="rect" id="node6" title=" " alt="" coords="717,155,895,196"/>
+<area shape="rect" id="node7" title=" " alt="" coords="920,155,1095,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="1119,162,1269,189"/>
+<area shape="rect" id="node9" title=" " alt="" coords="1293,162,1417,189"/>
+<area shape="rect" id="node10" title=" " alt="" coords="1442,162,1498,189"/>
 </map>

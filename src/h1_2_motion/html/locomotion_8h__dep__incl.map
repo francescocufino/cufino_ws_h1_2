@@ -1,5 +1,5 @@
 <map id="include/locomotion.h" name="include/locomotion.h">
-<area shape="rect" id="node1" title="Provides functions and classes for basic high level locomotion." alt="" coords="118,5,277,32"/>
-<area shape="rect" id="node2" href="$whole__body__motion_8cpp.html" title="This contains the user script for whole body motion." alt="" coords="5,80,168,121"/>
-<area shape="rect" id="node3" href="$locomotion_8cpp.html" title="This contains the implementation of functions for basic high level locomotion." alt="" coords="193,87,426,114"/>
+<area shape="rect" id="node1" title="Provides functions and classes for basic high level locomotion." alt="" coords="129,5,288,32"/>
+<area shape="rect" id="node2" href="$whole__body__motion_8cpp.html" title="This contains the user script for whole body motion." alt="" coords="5,80,212,151"/>
+<area shape="rect" id="node3" href="$locomotion_8cpp.html" title="This contains the implementation of functions for basic high level locomotion." alt="" coords="236,102,381,129"/>
 </map>

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['inspirehand_42',['InspireHand',['../classinspire_1_1InspireHand.html',1,'inspire']]],
-  ['inspirerunner_43',['InspireRunner',['../classInspireRunner.html',1,'']]]
+  ['inspirehand_56',['InspireHand',['../classinspire_1_1InspireHand.html',1,'inspire']]],
+  ['inspirerunner_57',['InspireRunner',['../classInspireRunner.html',1,'']]]
 ];

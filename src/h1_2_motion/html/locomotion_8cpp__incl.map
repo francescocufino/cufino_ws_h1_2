@@ -1,5 +1,5 @@
-<map id="h1_2_motion/src/locomotion.cpp" name="h1_2_motion/src/locomotion.cpp">
-<area shape="rect" id="node1" title="This contains the implementation of functions for basic high level locomotion." alt="" coords="71,5,305,32"/>
+<map id="src/locomotion.cpp" name="src/locomotion.cpp">
+<area shape="rect" id="node1" title="This contains the implementation of functions for basic high level locomotion." alt="" coords="115,5,261,32"/>
 <area shape="rect" id="node2" href="$locomotion_8h.html" title="Provides functions and classes for basic high level locomotion." alt="" coords="135,80,241,107"/>
 <area shape="rect" id="node3" title=" " alt="" coords="5,162,85,189"/>
 <area shape="rect" id="node4" title=" " alt="" coords="109,155,267,196"/>

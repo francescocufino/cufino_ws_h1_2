@@ -89,31 +89,146 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#ac1ff516de896a21f99c77b4054ee9626">initialize_arms</a> ()</td></tr>
 <tr class="memdesc:ac1ff516de896a21f99c77b4054ee9626"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the arms bringing them to a specific initial configuration. <br /></td></tr>
 <tr class="separator:ac1ff516de896a21f99c77b4054ee9626"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdff58bdfe9479658f79ed3d54afe68c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#acdff58bdfe9479658f79ed3d54afe68c">move_arms_integral</a> (std::array&lt; float, 15 &gt; q_f, float t_f)</td></tr>
-<tr class="memdesc:acdff58bdfe9479658f79ed3d54afe68c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the arms to the specified joint angles with an integral planner.  <a href="classArm__motion.html#acdff58bdfe9479658f79ed3d54afe68c">More...</a><br /></td></tr>
-<tr class="separator:acdff58bdfe9479658f79ed3d54afe68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca3ce893706095bce8d1112ca87f0cc1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#aca3ce893706095bce8d1112ca87f0cc1">move_arms_polynomial</a> (std::array&lt; float, 15 &gt; q_f, float t_f)</td></tr>
-<tr class="memdesc:aca3ce893706095bce8d1112ca87f0cc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the arms to the specified joint angles with a 5-th order polynomial planner.  <a href="classArm__motion.html#aca3ce893706095bce8d1112ca87f0cc1">More...</a><br /></td></tr>
-<tr class="separator:aca3ce893706095bce8d1112ca87f0cc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1991bd872e9d75699000c185978e9408"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a1991bd872e9d75699000c185978e9408">move_arms_integral</a> (std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt; q_f, float t_f)</td></tr>
+<tr class="memdesc:a1991bd872e9d75699000c185978e9408"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the arms to the specified joint angles with an integral planner.  <a href="classArm__motion.html#a1991bd872e9d75699000c185978e9408">More...</a><br /></td></tr>
+<tr class="separator:a1991bd872e9d75699000c185978e9408"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af79d7a7b267f4cf18d995cd86892c9dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#af79d7a7b267f4cf18d995cd86892c9dc">move_arms_polynomial</a> (std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt; q_f, float t_f)</td></tr>
+<tr class="memdesc:af79d7a7b267f4cf18d995cd86892c9dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the arms to the specified joint angles with a 5-th order polynomial planner.  <a href="classArm__motion.html#af79d7a7b267f4cf18d995cd86892c9dc">More...</a><br /></td></tr>
+<tr class="separator:af79d7a7b267f4cf18d995cd86892c9dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a913f7032d0d3d563a8ea827a3de26ba8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a913f7032d0d3d563a8ea827a3de26ba8">move_ee_linear</a> (std::array&lt; float, CARTESIAN_DIM &gt; target_left_ee_pose, std::array&lt; float, CARTESIAN_DIM &gt; target_right_ee_pose, bool cmd_orientation, float t_f)</td></tr>
+<tr class="memdesc:a913f7032d0d3d563a8ea827a3de26ba8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the end-effectors to the specified targets along a straight line, with a polynomial velocity profile.  <a href="classArm__motion.html#a913f7032d0d3d563a8ea827a3de26ba8">More...</a><br /></td></tr>
+<tr class="separator:a913f7032d0d3d563a8ea827a3de26ba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dc9e37c5975b2a55db8559b403bf38d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a6dc9e37c5975b2a55db8559b403bf38d">set_upper_limb_joints</a> (std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt; q_target)</td></tr>
+<tr class="memdesc:a6dc9e37c5975b2a55db8559b403bf38d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets instantaneously the upper limb joints to the specified joint angles.  <a href="classArm__motion.html#a6dc9e37c5975b2a55db8559b403bf38d">More...</a><br /></td></tr>
+<tr class="separator:a6dc9e37c5975b2a55db8559b403bf38d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ef63af0d3e12e05d62e6b5931301791"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a2ef63af0d3e12e05d62e6b5931301791">set_end_effector_targets</a> (std::array&lt; float, CARTESIAN_DIM &gt; target_left_ee_pose, std::array&lt; float, CARTESIAN_DIM &gt; target_right_ee_pose, std::array&lt; float, 6 &gt; target_left_ee_twist, std::array&lt; float, 6 &gt; target_right_ee_twist, float dt)</td></tr>
+<tr class="memdesc:a2ef63af0d3e12e05d62e6b5931301791"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets instantaneously the end-effectors poses. This function has to be called in a loop in which the targets change following a desired trajectory. Closed loop inverse kinematics is performed, producing as output a velocity command, which is then integrated with an integration time dt and sent as command to the manipulator.  <a href="classArm__motion.html#a2ef63af0d3e12e05d62e6b5931301791">More...</a><br /></td></tr>
+<tr class="separator:a2ef63af0d3e12e05d62e6b5931301791"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e2c56d4120bc61c1d067687bef39338"><td class="memItemLeft" align="right" valign="top"><a id="a5e2c56d4120bc61c1d067687bef39338"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a5e2c56d4120bc61c1d067687bef39338">stop_arms</a> ()</td></tr>
 <tr class="memdesc:a5e2c56d4120bc61c1d067687bef39338"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop the arms bringing them to the specific initial configuration. <br /></td></tr>
 <tr class="separator:a5e2c56d4120bc61c1d067687bef39338"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae7f46a0ea9cc0f75f727912985ccc003"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, 15 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#ae7f46a0ea9cc0f75f727912985ccc003">get_angles</a> ()</td></tr>
-<tr class="memdesc:ae7f46a0ea9cc0f75f727912985ccc003"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the arms angles.  <a href="classArm__motion.html#ae7f46a0ea9cc0f75f727912985ccc003">More...</a><br /></td></tr>
-<tr class="separator:ae7f46a0ea9cc0f75f727912985ccc003"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8ced209534621ec4fc1cc441562ae2a"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#ac8ced209534621ec4fc1cc441562ae2a">get_angles</a> ()</td></tr>
+<tr class="memdesc:ac8ced209534621ec4fc1cc441562ae2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the arms angles.  <a href="classArm__motion.html#ac8ced209534621ec4fc1cc441562ae2a">More...</a><br /></td></tr>
+<tr class="separator:ac8ced209534621ec4fc1cc441562ae2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d4bdb78021cc1c757f2b7e477edea68"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a5d4bdb78021cc1c757f2b7e477edea68">get_end_effectors_poses</a> (std::array&lt; float, CARTESIAN_DIM &gt; &amp;left_ee_pose, std::array&lt; float, CARTESIAN_DIM &gt; &amp;right_ee_pose)</td></tr>
+<tr class="memdesc:a5d4bdb78021cc1c757f2b7e477edea68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the end-effector poses.  <a href="classArm__motion.html#a5d4bdb78021cc1c757f2b7e477edea68">More...</a><br /></td></tr>
+<tr class="separator:a5d4bdb78021cc1c757f2b7e477edea68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdc08301a7e0fc3aa1c09ee6af594659"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#abdc08301a7e0fc3aa1c09ee6af594659">get_est_torques</a> ()</td></tr>
+<tr class="memdesc:abdc08301a7e0fc3aa1c09ee6af594659"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get estimated arms torques.  <a href="classArm__motion.html#abdc08301a7e0fc3aa1c09ee6af594659">More...</a><br /></td></tr>
+<tr class="separator:abdc08301a7e0fc3aa1c09ee6af594659"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f4eba0b4b2c60d493a1d64eb0517fff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a8f4eba0b4b2c60d493a1d64eb0517fff">admittance_control</a> (std::array&lt; float, 2 &gt; left_des_force, std::array&lt; float, 4 &gt; left_inertia, std::array&lt; float, 4 &gt; left_damping, std::array&lt; float, 4 &gt; left_stiffness, std::array&lt; float, 2 &gt; right_des_force, std::array&lt; float, 4 &gt; right_inertia, std::array&lt; float, 4 &gt; right_damping, std::array&lt; float, 4 &gt; right_stiffness, double dt)</td></tr>
+<tr class="memdesc:a8f4eba0b4b2c60d493a1d64eb0517fff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Two-dimensional admittance control for force tracking with infinite compliance. This function has to be called in a loop, running at a period dt. After the loop ends, the function <a class="el" href="classArm__motion.html#a4615892548aee0c386058d05a3fd2ca6" title="Call this function after the loop admittance control, to reset its initialization.">stop_admittance()</a> has to be called.  <a href="classArm__motion.html#a8f4eba0b4b2c60d493a1d64eb0517fff">More...</a><br /></td></tr>
+<tr class="separator:a8f4eba0b4b2c60d493a1d64eb0517fff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4615892548aee0c386058d05a3fd2ca6"><td class="memItemLeft" align="right" valign="top"><a id="a4615892548aee0c386058d05a3fd2ca6"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a4615892548aee0c386058d05a3fd2ca6">stop_admittance</a> ()</td></tr>
+<tr class="memdesc:a4615892548aee0c386058d05a3fd2ca6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call this function after the loop admittance control, to reset its initialization. <br /></td></tr>
+<tr class="separator:a4615892548aee0c386058d05a3fd2ca6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4359f41243e588cfaad2870fe78b18cd"><td class="memItemLeft" align="right" valign="top"><a id="a4359f41243e588cfaad2870fe78b18cd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classArm__motion.html#a4359f41243e588cfaad2870fe78b18cd">update_force_bias</a> ()</td></tr>
+<tr class="memdesc:a4359f41243e588cfaad2870fe78b18cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute force bias. <br /></td></tr>
+<tr class="separator:a4359f41243e588cfaad2870fe78b18cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b4d5c35d97fd6ae211f5ac595e5459e"><td class="memItemLeft" align="right" valign="top"><a id="a1b4d5c35d97fd6ae211f5ac595e5459e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>get_stop_status</b> ()</td></tr>
+<tr class="separator:a1b4d5c35d97fd6ae211f5ac595e5459e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A class for basic arm motion. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae7f46a0ea9cc0f75f727912985ccc003"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7f46a0ea9cc0f75f727912985ccc003">&#9670;&nbsp;</a></span>get_angles()</h2>
+<a id="a8f4eba0b4b2c60d493a1d64eb0517fff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f4eba0b4b2c60d493a1d64eb0517fff">&#9670;&nbsp;</a></span>admittance_control()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::array&lt; float, 15 &gt; Arm_motion::get_angles </td>
+          <td class="memname">void Arm_motion::admittance_control </td>
+          <td>(</td>
+          <td class="paramtype">std::array&lt; float, 2 &gt;&#160;</td>
+          <td class="paramname"><em>left_des_force</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>left_inertia</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>left_damping</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>left_stiffness</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 2 &gt;&#160;</td>
+          <td class="paramname"><em>right_des_force</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>right_inertia</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>right_damping</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 4 &gt;&#160;</td>
+          <td class="paramname"><em>right_stiffness</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Two-dimensional admittance control for force tracking with infinite compliance. This function has to be called in a loop, running at a period dt. After the loop ends, the function <a class="el" href="classArm__motion.html#a4615892548aee0c386058d05a3fd2ca6" title="Call this function after the loop admittance control, to reset its initialization.">stop_admittance()</a> has to be called. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">left_des_force</td><td>Desired left end-effector force. Coordinates order: [ForceX, ForceY] </td></tr>
+    <tr><td class="paramname">left_inertia</td><td>Desired left end-effector inertia Matrix. This has to be positive definite. Order [inertiaXX, inertiaXY, inertiaYX, inertiaYY] </td></tr>
+    <tr><td class="paramname">left_damping</td><td>Desired left end-effector Damping Matrix. This has to be positive definite. Order [DampingXX, DampingXY, DampingYX, DampingYY] </td></tr>
+    <tr><td class="paramname">left_stiffness</td><td>Desired left end-effector Stiffness Matrix. This has to be positive definite. Order [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY] </td></tr>
+    <tr><td class="paramname">right_des_force</td><td>Desired left end-effector force. Coordinates order: [ForceX, ForceY] </td></tr>
+    <tr><td class="paramname">right_inertia</td><td>Desired right end-effector inertia Matrix. This has to be positive definite. Order [inertiaXX, inertiaXY, inertiaYX, inertiaYY] </td></tr>
+    <tr><td class="paramname">right_damping</td><td>Desired right end-effector Damping Matrix. This has to be positive definite. Order [DampingXX, DampingXY, DampingYX, DampingYY] </td></tr>
+    <tr><td class="paramname">right_stiffness</td><td>Desired right end-effector Stiffness Matrix. This has to be positive definite. Order [StiffnessXX, StiffnessXY, StiffnessYX, StiffnessYY] </td></tr>
+    <tr><td class="paramname">dt</td><td>Period of the control loop in seconds </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac8ced209534621ec4fc1cc441562ae2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8ced209534621ec4fc1cc441562ae2a">&#9670;&nbsp;</a></span>get_angles()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt; Arm_motion::get_angles </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -128,8 +243,67 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="acdff58bdfe9479658f79ed3d54afe68c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acdff58bdfe9479658f79ed3d54afe68c">&#9670;&nbsp;</a></span>move_arms_integral()</h2>
+<a id="a5d4bdb78021cc1c757f2b7e477edea68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d4bdb78021cc1c757f2b7e477edea68">&#9670;&nbsp;</a></span>get_end_effectors_poses()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Arm_motion::get_end_effectors_poses </td>
+          <td>(</td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt; &amp;&#160;</td>
+          <td class="paramname"><em>left_ee_pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt; &amp;&#160;</td>
+          <td class="paramname"><em>right_ee_pose</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the end-effector poses. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">left_ee_pose</td><td>Left end-effector pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+    <tr><td class="paramname">right_ee_pose</td><td>Right end-effector pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="abdc08301a7e0fc3aa1c09ee6af594659"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdc08301a7e0fc3aa1c09ee6af594659">&#9670;&nbsp;</a></span>get_est_torques()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt; Arm_motion::get_est_torques </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get estimated arms torques. </p>
+<p>Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, WristRoll, WristPitch, WristYaw], <br  />
+ right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, WristRoll, WristPitch, WristYaw], <br  />
+ WaistYaw </p>
+
+</div>
+</div>
+<a id="a1991bd872e9d75699000c185978e9408"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1991bd872e9d75699000c185978e9408">&#9670;&nbsp;</a></span>move_arms_integral()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -137,7 +311,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">void Arm_motion::move_arms_integral </td>
           <td>(</td>
-          <td class="paramtype">std::array&lt; float, 15 &gt;&#160;</td>
+          <td class="paramtype">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt;&#160;</td>
           <td class="paramname"><em>q_f</em>, </td>
         </tr>
         <tr>
@@ -167,8 +341,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="aca3ce893706095bce8d1112ca87f0cc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca3ce893706095bce8d1112ca87f0cc1">&#9670;&nbsp;</a></span>move_arms_polynomial()</h2>
+<a id="af79d7a7b267f4cf18d995cd86892c9dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af79d7a7b267f4cf18d995cd86892c9dc">&#9670;&nbsp;</a></span>move_arms_polynomial()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -176,7 +350,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         <tr>
           <td class="memname">void Arm_motion::move_arms_polynomial </td>
           <td>(</td>
-          <td class="paramtype">std::array&lt; float, 15 &gt;&#160;</td>
+          <td class="paramtype">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt;&#160;</td>
           <td class="paramname"><em>q_f</em>, </td>
         </tr>
         <tr>
@@ -206,9 +380,145 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
+<a id="a913f7032d0d3d563a8ea827a3de26ba8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a913f7032d0d3d563a8ea827a3de26ba8">&#9670;&nbsp;</a></span>move_ee_linear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Arm_motion::move_ee_linear </td>
+          <td>(</td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt;&#160;</td>
+          <td class="paramname"><em>target_left_ee_pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt;&#160;</td>
+          <td class="paramname"><em>target_right_ee_pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>cmd_orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>t_f</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Move the end-effectors to the specified targets along a straight line, with a polynomial velocity profile. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">target_left_ee_pose</td><td>Left end-effector target pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+    <tr><td class="paramname">target_right_ee_pose</td><td>Right end-effector target pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+    <tr><td class="paramname">t_f</td><td>duration </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2ef63af0d3e12e05d62e6b5931301791"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ef63af0d3e12e05d62e6b5931301791">&#9670;&nbsp;</a></span>set_end_effector_targets()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Arm_motion::set_end_effector_targets </td>
+          <td>(</td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt;&#160;</td>
+          <td class="paramname"><em>target_left_ee_pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, CARTESIAN_DIM &gt;&#160;</td>
+          <td class="paramname"><em>target_right_ee_pose</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 6 &gt;&#160;</td>
+          <td class="paramname"><em>target_left_ee_twist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::array&lt; float, 6 &gt;&#160;</td>
+          <td class="paramname"><em>target_right_ee_twist</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>dt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets instantaneously the end-effectors poses. This function has to be called in a loop in which the targets change following a desired trajectory. Closed loop inverse kinematics is performed, producing as output a velocity command, which is then integrated with an integration time dt and sent as command to the manipulator. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">target_left_ee_pose</td><td>Left end-effector target pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+    <tr><td class="paramname">target_right_ee_pose</td><td>Right end-effector target pose. Coordinates order: [PositionX, PositionY, PositionZ, QuaternionX, QuaternionY, QuaternionZ, QuaternionW] </td></tr>
+    <tr><td class="paramname">target_left_ee_twist</td><td>Left end-effector target twist. Coordinates order: [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ] </td></tr>
+    <tr><td class="paramname">target_right_ee_twist</td><td>Right end-effector target twist. Coordinates order: [VelocityX, VelocityY, VelocityZ, OmegaX, OmegaY, OmegaZ] </td></tr>
+    <tr><td class="paramname">dt</td><td>Integration time </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6dc9e37c5975b2a55db8559b403bf38d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dc9e37c5975b2a55db8559b403bf38d">&#9670;&nbsp;</a></span>set_upper_limb_joints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Arm_motion::set_upper_limb_joints </td>
+          <td>(</td>
+          <td class="paramtype">std::array&lt; float, UPPER_LIMB_JOINTS_DIM &gt;&#160;</td>
+          <td class="paramname"><em>q_target</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets instantaneously the upper limb joints to the specified joint angles. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">q_f</td><td>Target configuration. Joint order: left [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, WristRoll, WristPitch, WristYaw], <br  />
+ right [ShoulderPitch, ShoulderRoll, ShoulderYaw, Elbow, WristRoll, WristPitch, WristYaw], <br  />
+ WaistYaw </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/<a class="el" href="arm__motion_8h_source.html">arm_motion.h</a></li>
-<li>h1_2_motion/src/<a class="el" href="arm__motion_8cpp.html">arm_motion.cpp</a></li>
+<li>src/<a class="el" href="arm__motion_8cpp.html">arm_motion.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

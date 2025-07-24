@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_7b19a3a5759e728d0f751debf3a5af49.html">include</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -85,37 +85,42 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &lt;unordered_map&gt;</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &lt;array&gt;</span></div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classHand__motion.html">   33</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHand__motion.html">Hand_motion</a>{</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <a class="code" href="classHand__motion.html">Hand_motion</a>();</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classHand__motion.html#aa7538663ebb4c66ff7546a7309355bb1">move_hands</a>(std::array&lt;float, 12&gt;&amp; angles);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    std::array&lt;float, 6&gt; <a class="code" href="classHand__motion.html#aff67cb9ec0e38fd8a13afc32bda7374e">getRightQ</a>();</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    std::array&lt;float, 6&gt; <a class="code" href="classHand__motion.html#a0d7dc8abfac5d73caf6252774e22814f">getLeftQ</a>();</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    std::array&lt;float, 12&gt; <a class="code" href="classHand__motion.html#aecab56e528218e558f23ab29db1402d2">get_angles</a>();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">void</span> InitDDS_();</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="comment">// DDS parameters</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    std::mutex mtx;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    unitree::robot::ChannelPublisherPtr&lt;unitree_go::msg::dds_::MotorCmds_&gt; handcmd;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    unitree::robot::ChannelSubscriberPtr&lt;unitree_go::msg::dds_::MotorStates_&gt; handstate;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    unitree_go::msg::dds_::MotorCmds_ cmd;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    unitree_go::msg::dds_::MotorStates_ state;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;};</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#define HANDS_JOINTS_DIM 12</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#define R_HAND_JOINTS_DIM 6</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#define L_HAND_JOINTS_DIM 6</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classHand__motion.html">   38</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHand__motion.html">Hand_motion</a>{</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <a class="code" href="classHand__motion.html">Hand_motion</a>();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classHand__motion.html#a387c0b592fac5db20244835fd3208923">move_hands</a>(std::array&lt;float, HANDS_JOINTS_DIM&gt;&amp; angles);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    std::array&lt;float, 6&gt; <a class="code" href="classHand__motion.html#ac4f8f4fb99f1d100503a7bf74dbb6cdf">getRightQ</a>();</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    std::array&lt;float, 6&gt; <a class="code" href="classHand__motion.html#a527b139a6aaa0e80d38b5919f4185979">getLeftQ</a>();</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::array&lt;float, HANDS_JOINTS_DIM&gt; <a class="code" href="classHand__motion.html#a28fe5920cc15a34ab8d45f934bcbb80f">get_angles</a>();</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">void</span> InitDDS_();</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="comment">// DDS parameters</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    std::mutex mtx;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    unitree::robot::ChannelPublisherPtr&lt;unitree_go::msg::dds_::MotorCmds_&gt; handcmd;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    unitree::robot::ChannelSubscriberPtr&lt;unitree_go::msg::dds_::MotorStates_&gt; handstate;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    unitree_go::msg::dds_::MotorCmds_ cmd;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    unitree_go::msg::dds_::MotorStates_ state;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;};</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclassHand__motion_html_aecab56e528218e558f23ab29db1402d2"><div class="ttname"><a href="classHand__motion.html#aecab56e528218e558f23ab29db1402d2">Hand_motion::get_angles</a></div><div class="ttdeci">std::array&lt; float, 12 &gt; get_angles()</div><div class="ttdoc">Get all the hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:43</div></div>
-<div class="ttc" id="aclassHand__motion_html"><div class="ttname"><a href="classHand__motion.html">Hand_motion</a></div><div class="ttdoc">A class for basic inspire hands motion.</div><div class="ttdef"><b>Definition:</b> hand_motion.h:33</div></div>
-<div class="ttc" id="aclassHand__motion_html_aff67cb9ec0e38fd8a13afc32bda7374e"><div class="ttname"><a href="classHand__motion.html#aff67cb9ec0e38fd8a13afc32bda7374e">Hand_motion::getRightQ</a></div><div class="ttdeci">std::array&lt; float, 6 &gt; getRightQ()</div><div class="ttdoc">Get the right hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:25</div></div>
-<div class="ttc" id="aclassHand__motion_html_aa7538663ebb4c66ff7546a7309355bb1"><div class="ttname"><a href="classHand__motion.html#aa7538663ebb4c66ff7546a7309355bb1">Hand_motion::move_hands</a></div><div class="ttdeci">void move_hands(std::array&lt; float, 12 &gt; &amp;angles)</div><div class="ttdoc">Move the fingers to the specified angles.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:16</div></div>
-<div class="ttc" id="aclassHand__motion_html_a0d7dc8abfac5d73caf6252774e22814f"><div class="ttname"><a href="classHand__motion.html#a0d7dc8abfac5d73caf6252774e22814f">Hand_motion::getLeftQ</a></div><div class="ttdeci">std::array&lt; float, 6 &gt; getLeftQ()</div><div class="ttdoc">Get the left hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:34</div></div>
+<div class="ttc" id="aclassHand__motion_html"><div class="ttname"><a href="classHand__motion.html">Hand_motion</a></div><div class="ttdoc">A class for basic inspire hands motion.</div><div class="ttdef"><b>Definition:</b> hand_motion.h:38</div></div>
+<div class="ttc" id="aclassHand__motion_html_a28fe5920cc15a34ab8d45f934bcbb80f"><div class="ttname"><a href="classHand__motion.html#a28fe5920cc15a34ab8d45f934bcbb80f">Hand_motion::get_angles</a></div><div class="ttdeci">std::array&lt; float, HANDS_JOINTS_DIM &gt; get_angles()</div><div class="ttdoc">Get all the hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:43</div></div>
+<div class="ttc" id="aclassHand__motion_html_a527b139a6aaa0e80d38b5919f4185979"><div class="ttname"><a href="classHand__motion.html#a527b139a6aaa0e80d38b5919f4185979">Hand_motion::getLeftQ</a></div><div class="ttdeci">std::array&lt; float, 6 &gt; getLeftQ()</div><div class="ttdoc">Get the left hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:34</div></div>
+<div class="ttc" id="aclassHand__motion_html_ac4f8f4fb99f1d100503a7bf74dbb6cdf"><div class="ttname"><a href="classHand__motion.html#ac4f8f4fb99f1d100503a7bf74dbb6cdf">Hand_motion::getRightQ</a></div><div class="ttdeci">std::array&lt; float, 6 &gt; getRightQ()</div><div class="ttdoc">Get the right hand angles normalized in the range [0, 1], with 0: close 1: open.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:25</div></div>
+<div class="ttc" id="aclassHand__motion_html_a387c0b592fac5db20244835fd3208923"><div class="ttname"><a href="classHand__motion.html#a387c0b592fac5db20244835fd3208923">Hand_motion::move_hands</a></div><div class="ttdeci">void move_hands(std::array&lt; float, HANDS_JOINTS_DIM &gt; &amp;angles)</div><div class="ttdoc">Move the fingers to the specified angles.</div><div class="ttdef"><b>Definition:</b> hand_motion.cpp:16</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">
