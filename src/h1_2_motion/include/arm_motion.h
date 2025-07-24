@@ -123,12 +123,16 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::array<float, 2> x_eq_l{};
     std::array<float, CARTESIAN_DIM> left_adm_pos_cmd{};
     std::array<float, 6> left_adm_twist_cmd{};
+    std::array<float, CARTESIAN_DIM> left_adm_pos_init{};
+
 
     std::array<float, 2> x_r_dot_adm{};
     std::array<float, 2> x_r_adm{};
     std::array<float, 2> x_eq_r{};
     std::array<float, CARTESIAN_DIM> right_adm_pos_cmd{};
     std::array<float, 6> right_adm_twist_cmd{};
+    std::array<float, CARTESIAN_DIM> right_adm_pos_init{};
+
 
     //Force bias
     std::array<float, 12> force_bias{};

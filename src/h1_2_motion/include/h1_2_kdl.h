@@ -114,7 +114,7 @@ class H1_2_kdl{
      * [PositionX, PositionY]
      * @param left_velocity Computed left end-effector reference velocity at previous step. Coordinates order: 
      * [VelocityX, VelocityY]
-     * @param left_delta_force Left end-effector force error, desired force - actual force. Coordinates order: 
+     * @param left_delta_force Left end-effector force error, actual force - desired force. Coordinates order: 
      * [ForceX, ForceY]
      * @param left_eq_position Equilibrium left end-effector position. Coordinates order: 
      * [PositionX, PositionY]
@@ -128,7 +128,7 @@ class H1_2_kdl{
      * [PositionX, PositionY]
      * @param right_velocity Computed right end-effector reference velocity at previous step. Coordinates order: 
      * [VelocityX, VelocityY]
-     * @param right_delta_force Right end-effector force error, desired force - actual force. Coordinates order: 
+     * @param right_delta_force Right end-effector force error, actual force - desired force. Coordinates order: 
      * [ForceX, ForceY]
      * @param right_eq_position Equilibrium right end-effector position. Coordinates order: 
      * [PositionX, PositionY]

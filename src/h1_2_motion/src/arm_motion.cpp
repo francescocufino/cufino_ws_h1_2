@@ -438,32 +438,36 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
     x_r_adm = {right_adm_pos_cmd.at(0), right_adm_pos_cmd.at(1)};
     x_eq_l = x_l_adm;
     x_eq_r = x_r_adm;
-    //update_force_bias();
+    update_force_bias();
+
+    get_end_effectors_poses(left_adm_pos_init, right_adm_pos_init);
+
     init_adm=true;
   }   
                                    
   //Get left and right force
   force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 0.2);
 
-  //subtract bias
-  force.at(0) = force.at(0) - force_bias.at(0);
-  force.at(1) = force.at(1) - force_bias.at(1);
-  force.at(6) = force.at(6) - force_bias.at(6);
-  force.at(7) = force.at(7) - force_bias.at(7);
+  //subtract bias and use scale factor
+  force.at(0) = (force.at(0) - force_bias.at(0));
+  force.at(1) = (force.at(1) - force_bias.at(1));
+  force.at(6) = (force.at(6) - force_bias.at(6));
+  force.at(7) = (force.at(7) - force_bias.at(7));
 
 
   /////fake force feedback
-    std::array<float, CARTESIAN_DIM> left_actual_ee;
-    std::array<float, CARTESIAN_DIM> right_actual_ee;
+
+    // std::array<float, CARTESIAN_DIM> left_actual_ee;
+    // std::array<float, CARTESIAN_DIM> right_actual_ee;
   
-    get_end_effectors_poses(left_actual_ee, right_actual_ee);
+    // get_end_effectors_poses(left_actual_ee, right_actual_ee);
   
-    float k_f = 2000;
-  
-    force.at(0) = k_f*(x_l_adm.at(0) - left_actual_ee.at(0));
-    force.at(1) =  k_f*(x_l_adm.at(1) - left_actual_ee.at(1));
-    force.at(6) = k_f*(x_r_adm.at(0) - right_actual_ee.at(0));
-    force.at(7) = k_f*(x_r_adm.at(1) - right_actual_ee.at(1));
+    // float k_f = 2;
+
+    // force.at(0) = -k_f*(left_adm_pos_init.at(0) - left_actual_ee.at(0));
+    // force.at(1) =  -k_f*(left_adm_pos_init.at(1) - left_actual_ee.at(1));
+    // force.at(6) = -k_f*(right_adm_pos_init.at(0) - right_actual_ee.at(0));
+    // force.at(7) = -k_f*(right_actual_ee.at(1) - right_adm_pos_init.at(1));
   ////////
 
 
@@ -478,8 +482,8 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
 
   //Compute force error
   for (int i=0; i<left_delta_force.size(); i++){
-    left_delta_force.at(i) = (left_des_force.at(i) - left_force.at(i));
-    right_delta_force.at(i) = (right_des_force.at(i) - right_force.at(i));
+    left_delta_force.at(i) = -(left_des_force.at(i) - left_force.at(i));
+    right_delta_force.at(i) = -(right_des_force.at(i) - right_force.at(i));
   }
 
 
