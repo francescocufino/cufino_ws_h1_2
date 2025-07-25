@@ -343,6 +343,8 @@ bool Arm_motion::set_end_effector_targets(std::array<float, CARTESIAN_DIM> targe
     left_twist_ee_cmd.push_back(target_left_ee_twist);
     right_twist_ee_cmd.push_back(target_right_ee_twist);
     force_ee.push_back(force);
+    est_torques.push_back(tau_est);
+    gravity_torques.push_back(tau_g);
 
 
     return true;
@@ -446,7 +448,11 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
   }   
                                    
   //Get left and right force
-  force = h1_2_kdl.compute_ee_forces(get_angles(), get_est_torques(), 0.2);
+  _q_actual = get_angles();
+  tau_est = get_est_torques();
+  tau_g = h1_2_kdl.get_gravity_torques(_q_actual);
+
+  force = h1_2_kdl.compute_ee_forces(_q_actual, tau_est, 0.2);
 
   //subtract bias and use scale factor
   force.at(0) = (force.at(0) - force_bias.at(0));
@@ -568,6 +574,15 @@ std::array<float, UPPER_LIMB_JOINTS_DIM> Arm_motion::get_est_torques(){
   for (int i = 0; i < tau_est.size(); ++i) {
 	  tau_est.at(i) = state_msg->motor_state().at(arm_joints.at(i)).tau_est();
   }
+
+  // SUBTRACT GRAVITY
+  // std::array<float, UPPER_LIMB_JOINTS_DIM> tau_gravity{};
+  // tau_gravity = h1_2_kdl.get_gravity_torques(get_angles());
+  // for (int i = 0; i < tau_est.size(); ++i) {
+	//   tau_est.at(i) = tau_est.at(i) - tau_gravity.at(i);
+  // }
+
+
   return tau_est;
 }
 
@@ -624,7 +639,9 @@ void Arm_motion::store_data(){
   writeCSV("../src/h1_2_demo/output/left_twist_ee_cmd.csv", left_twist_ee_cmd);
   writeCSV("../src/h1_2_demo/output/right_twist_ee_cmd.csv", right_twist_ee_cmd);
   writeCSV("../src/h1_2_demo/output/force_ee.csv", force_ee);
-
+  writeCSV("../src/h1_2_demo/output/force_ee.csv", force_ee);
+  writeCSV("../src/h1_2_demo/output/est_torques.csv", est_torques);
+  writeCSV("../src/h1_2_demo/output/gravity_torques.csv", gravity_torques);
 
 }
 

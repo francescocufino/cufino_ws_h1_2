@@ -133,6 +133,10 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::array<float, 6> right_adm_twist_cmd{};
     std::array<float, CARTESIAN_DIM> right_adm_pos_init{};
 
+    std::array<float, UPPER_LIMB_JOINTS_DIM> _q_actual;
+    std::array<float, UPPER_LIMB_JOINTS_DIM> tau_est;
+    std::array<float, UPPER_LIMB_JOINTS_DIM> tau_g;
+
 
     //Force bias
     std::array<float, 12> force_bias{};
@@ -213,6 +217,7 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::shared_ptr<unitree_hg::msg::dds_::LowCmd_> msg;
     unitree::robot::ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> low_state_subscriber;
     std::shared_ptr<unitree_hg::msg::dds_::LowState_> state_msg;
+    std::shared_ptr<unitree_hg::msg::dds_::IMUState_> imu_msg;    
 
     //Safety check
     bool safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target, double delta);
@@ -228,6 +233,9 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::vector<std::array<float, 6>> left_twist_ee_cmd;
     std::vector<std::array<float, 6>> right_twist_ee_cmd;
     std::vector<std::array<float, 12>> force_ee;
+    std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM>> est_torques;
+    std::vector<std::array<float, UPPER_LIMB_JOINTS_DIM>> gravity_torques;
+
 
 
     //Save data to csv for test move_ee_linear

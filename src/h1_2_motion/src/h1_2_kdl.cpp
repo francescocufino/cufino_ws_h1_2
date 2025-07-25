@@ -673,4 +673,44 @@ void H1_2_kdl::extract_joint_names_recursive(const KDL::TreeElement& segment) {
   }
 }
 
+std::array<float, UPPER_LIMB_JOINTS_DIM> H1_2_kdl::get_gravity_torques(std::array<float, UPPER_LIMB_JOINTS_DIM> q){
+    KDL::Vector gravity(0.0, 0.0, -9.81);
+
+    KDL::ChainDynParam dyn_param_l(_k_chain_l, gravity);
+    KDL::ChainDynParam dyn_param_r(_k_chain_r, gravity);
+
+
+    unsigned int nl = _k_chain_l.getNrOfJoints();
+    KDL::JntArray joint_positions_l(nl);
+    KDL::JntArray gravity_torques_l(nl);
+
+    unsigned int nr = _k_chain_r.getNrOfJoints();
+    KDL::JntArray joint_positions_r(nr);
+    KDL::JntArray gravity_torques_r(nr);
+
+    for (unsigned int i = 0; i < nl; ++i) {
+      joint_positions_l(i) = q.at(i); 
+    }
+    for (unsigned int i = 0; i < nr; ++i) {
+      joint_positions_r(i) = q.at(i+7); 
+    }
+
+    if (dyn_param_l.JntToGravity(joint_positions_l, gravity_torques_l) < 0) {
+        std::cerr << "Failed to compute gravity torques!" << std::endl;
+    }
+
+    if (dyn_param_r.JntToGravity(joint_positions_r, gravity_torques_r) < 0) {
+      std::cerr << "Failed to compute gravity torques!" << std::endl;
+    }
+
+    std::array<float, UPPER_LIMB_JOINTS_DIM> gravity_torques;
+    for(int i=0; i<UPPER_LIMB_JOINTS_DIM; i++){
+      if(i<=6)
+        gravity_torques.at(i) = gravity_torques_l(i);
+      else
+        gravity_torques.at(i) = gravity_torques_r(i-7);
+    }
+    return gravity_torques;
+}
+
 

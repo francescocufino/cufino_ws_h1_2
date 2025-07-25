@@ -29,6 +29,7 @@
 #include <kdl/treeiksolverpos_nr_jl.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treeiksolvervel_wdls.hpp>
+#include <kdl/chaindynparam.hpp>
 #include <eigen3/Eigen/Dense>
 
 #define WRENCH_DIM 12
@@ -203,6 +204,9 @@ class H1_2_kdl{
                      std::array<float, CARTESIAN_DIM> & left_ee_pose,
                      std::array<float, CARTESIAN_DIM> & right_ee_pose);
 
+    
+    std::array<float, UPPER_LIMB_JOINTS_DIM> get_gravity_torques(std::array<float, UPPER_LIMB_JOINTS_DIM>);
+    
   };
 
 
