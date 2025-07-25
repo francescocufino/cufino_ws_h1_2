@@ -2,7 +2,7 @@ close all, clc, clear all
 
 % Define base path
 base_path = './';
-timestep = 0.02;  % seconds
+timestep = 0.01;  % seconds
 
 
 % File names and plot titles

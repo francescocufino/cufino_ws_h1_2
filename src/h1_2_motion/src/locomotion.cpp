@@ -11,6 +11,7 @@
 #include "locomotion.h"
 
 Locomotion::Locomotion(){
+  state_msg = std::make_shared<unitree_hg::msg::dds_::LowState_>();
   client = std::make_shared<unitree::robot::h1::LocoClient>();
   client->Init();
   client->SetTimeout(10.f);
@@ -36,7 +37,9 @@ void Locomotion::walk(float vx, float vy, float vyaw){
 }
 
 void Locomotion::stop_walk(){
+  std::cout << "Stopping walk\n";
   stop = true;
+  client->Move(0,0,0);
   client->StopMove();
 }
 
