@@ -15,6 +15,16 @@ Locomotion::Locomotion(){
   client->Init();
   client->SetTimeout(10.f);
   client->Start();
+
+  low_state_subscriber.reset(new unitree::robot::ChannelSubscriber<unitree_hg::msg::dds_::LowState_>(kTopicState));
+  low_state_subscriber->InitChannel(
+      [&](const void *msg_ptr) {
+          auto s = static_cast<const unitree_hg::msg::dds_::LowState_*>(msg_ptr);
+          *state_msg = *s;  // Dereferencing shared_ptr to copy data
+          if(!first_cb){first_cb = true;}
+      }, 
+      1
+  );
 }
 
 void Locomotion::walk_temporized(float vx, float vy, float vyaw, float duration){
@@ -26,6 +36,7 @@ void Locomotion::walk(float vx, float vy, float vyaw){
 }
 
 void Locomotion::stop_walk(){
+  stop = true;
   client->StopMove();
 }
 

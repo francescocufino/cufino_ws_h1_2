@@ -20,6 +20,9 @@
 //high level (for locomotion)
 #include <unitree/robot/h1/loco/h1_loco_api.hpp>
 #include <unitree/robot/h1/loco/h1_loco_client.hpp>
+#include <unitree/idl/hg/LowState_.hpp>
+#include <unitree/robot/channel/channel_subscriber.hpp>
+
 
 /**
  * @class Locomotion
@@ -28,6 +31,13 @@
 class Locomotion{
   private:
     std::shared_ptr<unitree::robot::h1::LocoClient> client;
+
+    const std::string kTopicState = "rt/lowstate";
+    unitree::robot::ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> low_state_subscriber;
+    std::shared_ptr<unitree_hg::msg::dds_::LowState_> state_msg;
+    bool first_cb=false;
+    bool stop = false;
+
    
   public:
     Locomotion();
@@ -52,6 +62,14 @@ class Locomotion{
      * @brief Stop the walk.
      */
     void stop_walk();
+
+    /**
+     * @brief Get accelerometer
+     */
+    std::array <float, 3> get_accelerometer(){return state_msg->imu_state().accelerometer();} 
+
+    bool get_stop_status(){return stop;}
+
   };
 
   #endif

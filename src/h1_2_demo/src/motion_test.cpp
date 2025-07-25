@@ -1,19 +1,76 @@
 #include "arm_motion.h"
+#include "locomotion.h"
 #include <csignal>
+#include <boost/thread.hpp>
+
 
 
 
 std::unique_ptr<Arm_motion> h1_motion_ptr; 
+std::unique_ptr<Locomotion> h1_walk_ptr; 
+
 
 void stop(int){
+    h1_walk_ptr->stop_walk();
     h1_motion_ptr->stop_admittance();
     h1_motion_ptr->stop_arms(); //Eventually set actual joint pos
     return;
 }
 
+void admittance_ctrl_loop(double dt){
+    std::array<float, 2UL> left_des_force = {0,0};
+    std::array<float, 4UL> left_inertia = {2,0,0,2};
+    std::array<float, 4UL> left_damping = {3,0,0,3};
+    std::array<float, 4UL> left_stiffness = {500,0,0,500};
+    std::array<float, 2UL> right_des_force = {0,0};
+    std::array<float, 4UL> right_inertia = left_inertia;
+    std::array<float, 4UL> right_damping = left_damping;
+    std::array<float, 4UL> right_stiffness = left_stiffness;
+    while(true && !h1_motion_ptr->get_stop_status()){
+        h1_motion_ptr->admittance_control(left_des_force,
+            left_inertia,
+            left_damping,
+            left_stiffness,
+            right_des_force,
+            right_inertia,
+            right_damping,
+            right_stiffness,
+            dt);
+        usleep(dt * 1e6);
+    }
+}
+
+void push(double dt){
+    std::array<float, 3> velocity_cmd = {};
+    std::array<float, 3> acceleration_cmd = {0.1, 0, 0};
+    std::array<float, 3> velocity_fb = {};
+    std::array<float, 3> acceleration_fb = {};
+
+
+
+    while(velocity_fb.at(0) < 0.1 && !h1_walk_ptr->get_stop_status()){
+        //Get acc
+        acceleration_fb = h1_walk_ptr->get_accelerometer();
+        //Integrate acc
+        velocity_fb.at(0) = velocity_fb.at(0) + acceleration_fb.at(0) *dt;
+        //Integrate command acc
+        velocity_cmd.at(0) = velocity_cmd.at(0) + acceleration_cmd.at(0) *dt;
+
+        std::cout << "Acc x fb " << acceleration_fb.at(0);
+        std::cout << "Vel x fb " << velocity_fb.at(0);
+
+
+        if(!h1_walk_ptr->get_stop_status()){
+            //h1_walk_ptr->walk(velocity_cmd.at(0), 0, 0);
+        }
+        usleep(1e6 * dt);
+    }
+}
+
 int main(int argc, char const *argv[]){
     unitree::robot::ChannelFactory::Instance()->Init(0, argv[1]);
     h1_motion_ptr = std::make_unique<Arm_motion>();
+    h1_walk_ptr = std::make_unique<Locomotion>();
     std::array<float, 7UL> init_left_ee_pose, init_right_ee_pose;
     std::array<float, 7UL> target_left_ee_pose, target_right_ee_pose;
     std::array<float, 7UL> reached_left_ee_pose, reached_right_ee_pose;
@@ -221,28 +278,11 @@ int main(int argc, char const *argv[]){
 */
 
 //TEST 6 Admittance control
-std::array<float, 2UL> left_des_force = {0,0};
-std::array<float, 4UL> left_inertia = {2,0,0,2};
-std::array<float, 4UL> left_damping = {3,0,0,3};
-std::array<float, 4UL> left_stiffness = {500,0,0,500};
-std::array<float, 2UL> right_des_force = {0,0};
-std::array<float, 4UL> right_inertia = left_inertia;
-std::array<float, 4UL> right_damping = left_damping;
-std::array<float, 4UL> right_stiffness = left_stiffness;
+double dt = 0.02;
+std::shared_ptr<boost::thread> thread_arms = std::make_shared<boost::thread>(admittance_ctrl_loop, dt);  
+std::shared_ptr<boost::thread> thread_push = std::make_shared<boost::thread>(push, dt);  
+thread_arms->join();
+thread_push->join();
 
-double dt = 0.01;
-
-while(true && !h1_motion_ptr->get_stop_status()){
-    h1_motion_ptr->admittance_control(left_des_force,
-        left_inertia,
-        left_damping,
-        left_stiffness,
-        right_des_force,
-        right_inertia,
-        right_damping,
-        right_stiffness,
-        dt);
-    usleep(dt * 1e6);
-}
 
 }

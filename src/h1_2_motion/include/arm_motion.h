@@ -217,7 +217,6 @@ const std::array<float, UPPER_LIMB_JOINTS_DIM> kd_array = { 15.0, 15.0, 15.0, 15
     std::shared_ptr<unitree_hg::msg::dds_::LowCmd_> msg;
     unitree::robot::ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> low_state_subscriber;
     std::shared_ptr<unitree_hg::msg::dds_::LowState_> state_msg;
-    std::shared_ptr<unitree_hg::msg::dds_::IMUState_> imu_msg;    
 
     //Safety check
     bool safety_check(std::array<float, UPPER_LIMB_JOINTS_DIM> q_target, double delta);
