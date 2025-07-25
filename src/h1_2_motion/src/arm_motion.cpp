@@ -440,7 +440,7 @@ void Arm_motion::admittance_control(std::array<float, 2> left_des_force, std::ar
     x_r_adm = {right_adm_pos_cmd.at(0), right_adm_pos_cmd.at(1)};
     x_eq_l = x_l_adm;
     x_eq_r = x_r_adm;
-    update_force_bias();
+    //update_force_bias();
 
     get_end_effectors_poses(left_adm_pos_init, right_adm_pos_init);
 

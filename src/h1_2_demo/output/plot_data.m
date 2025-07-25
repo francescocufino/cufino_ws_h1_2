@@ -1,6 +1,9 @@
+close all, clc, clear all
+
 % Define base path
 base_path = './';
 timestep = 0.02;  % seconds
+
 
 % File names and plot titles
 files = {
@@ -13,6 +16,9 @@ files = {
     'left_twist_ee_cmd.csv',        'Left Twist EE Command';
     'right_twist_ee_cmd.csv',       'Right Twist EE Command'
     'force_ee.csv',                 'End-effector forces'
+        'est_torques.csv',           'est_torques'
+    'gravity_torques.csv',           'gravity_torques'
+
 };
 
 % Loop over each file

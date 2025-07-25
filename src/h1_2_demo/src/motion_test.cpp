@@ -224,7 +224,7 @@ int main(int argc, char const *argv[]){
 std::array<float, 2UL> left_des_force = {0,0};
 std::array<float, 4UL> left_inertia = {2,0,0,2};
 std::array<float, 4UL> left_damping = {3,0,0,3};
-std::array<float, 4UL> left_stiffness = {0,0,0,0};
+std::array<float, 4UL> left_stiffness = {500,0,0,500};
 std::array<float, 2UL> right_des_force = {0,0};
 std::array<float, 4UL> right_inertia = left_inertia;
 std::array<float, 4UL> right_damping = left_damping;
