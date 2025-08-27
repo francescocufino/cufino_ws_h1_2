@@ -296,6 +296,7 @@ int main(int argc, char const *argv[]){
 
     //TEST 7 push
 
+
     std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_pushing_test = {-0.0237002, 0.21376, -0.121089, 0.41662, -0.0699079, 0.359728, -0.142376,
         -0.0145812, -0.210837, 0.12468, 0.440892, 0.0750732, 0.37466, 0.150034}; 
         //-0.000562433,};
@@ -305,6 +306,8 @@ int main(int argc, char const *argv[]){
     //0.f};
     std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1);
     std::array<float, HANDS_JOINTS_DIM> hand_closed_pos; hand_closed_pos.fill(0);
+
+/*
     h1_hand_ptr->move_hands(hand_opened_pos);
     h1_motion_ptr->initialize_arms();
     h1_motion_ptr->move_arms_polynomial(arm_pos_pushing_test, 3);
@@ -318,6 +321,16 @@ int main(int argc, char const *argv[]){
     boost::thread push_thread(push);
     admittance_thread.join(); // Wait for the thread to finish (or use detach if desired)
     push_thread.join(); 
+*/
+
+// TEST HANDS
+    h1_hand_ptr->move_hands(hand_opened_pos);
+    std::cout << "Press ENTER to grasp ...";
+    std::cin.get();
+    h1_hand_ptr->move_hands(hand_closed_pos);
+    std::cout << "Press ENTER to release grasp ...";
+    std::cin.get();
+    h1_hand_ptr->move_hands(hand_opened_pos);
 
 
 }
