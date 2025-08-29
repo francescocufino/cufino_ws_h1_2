@@ -35,6 +35,8 @@ cd build
 cmake ..
 make
 ```
+## Turning on the robot
+Insert the batteries and press the two buttons at the same time, then release them, and immediately after press and hold them.
 
 ## Connection to the robot
 ### Tethered connection
@@ -72,24 +74,21 @@ ssh unitree@192.168.2.10
 ```
 Password Unitree0408.
 
-## Connection to the hands
-The hands have to be connected on the machine on which the program will run. Actually, you can run the program only on external machine since the robot PC2 is unaccessible.
+## Robot set up
+1. Wait about one minute after the robot has been turned on.
+2. Turn on the robot remote controller, pressing and releasing the button, then immediately after press and hold it
+3. Enter in damping mode, pressing L1+A
+4. Enter in ready mode, pressing L1+UP
 
-1. Visualize the kernel msg on your machine
-```sh
-dmesg -w
-```
-
-2. Connect the blue usb serial adapter on the robot back to your machine. When connecting, a kernel msg should be visualized in the terminal opened at point 1, telling you where the device has been mounted. It usually should be ttyUSB0. If you visualize this message, the connection was succesful.
-
-
+## Wheelchair push demo
+To run the demo, please go in src/h1_2_demo and refer to that readme
 
 ## Subfolders
 From now, please refer to the respective subfolders
-- [h1_2_motion](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_motion) contains the implementation of basic motions (arm, hands, locomotion) exploiting high level functionalitis of unitree_sdk2;
-- [h1_2_demo](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_demo) contains an example user program based on h1_2_motion to perform whole body motion;
-- [h1_2_pushing](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_pushing) contains the code under development for the wheelchair pushing project;
-- [h1_2_description](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/h1_2_description) contains a universal humanoid robot description (URDF & MJCF) for the [Unitree H1_2](https://www.unitree.com/h1), developed by [Unitree Robotics](https://www.unitree.com/).
+- [h1_2_motion](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/src/h1_2_motion) contains the implementation of basic motions (arm, hands, locomotion) exploiting high level functionalitis of unitree_sdk2;
+- [h1_2_demo](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/src/h1_2_demo) contains an example user program based on h1_2_motion to perform whole body motion;
+- [h1_2_pushing](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/src/h1_2_pushing) contains the code under development for the wheelchair pushing project;
+- [h1_2_description](https://github.com/francescocufino/cufino_ws_h1_2/tree/main/src/h1_2_description) contains a universal humanoid robot description (URDF & MJCF) for the [Unitree H1_2](https://www.unitree.com/h1), developed by [Unitree Robotics](https://www.unitree.com/).
 
    
    

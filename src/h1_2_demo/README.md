@@ -13,7 +13,7 @@ and write `shake` for shake hand, `wave` for waving, `fist_bump` for fist bump f
 ### Execution using docker
 If you are using docker and you built the image from [README.md](https://github.com/francescocufino/unitree_h1_2/README.md), supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
 
-1. Run the container, navigate in the build folder you created when building, and run the hand service. The password for sudo is 'user'.
+1. From inside the high level robot computer (see previous readme for connection with robot), run the container, navigate in the build folder you created when building, and run the hands drivers. The password for sudo is 'user'.
 ```sh
 docker start unitree_sdk2_container_2
 cd ~/cufino_ws_h1_2/src
@@ -26,6 +26,7 @@ docker exec -it unitree_sdk2_container_2 bash
 cd ~/cufino_ws_h1_2/build
 ./bin/motion_test eth0
 ```
+After the initialization, position the wheelchair handles such that the robot can grasp in, then press enter to continue the program and grasping, and then press enter again to make the robot push.
 Press ctrl+c to make the robot stop
 
 For wave demo, instead, run ``./bin/whole_body_motion eth0``
