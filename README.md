@@ -79,6 +79,8 @@ Password Unitree0408.
 2. Turn on the robot remote controller, pressing and releasing the button, then immediately after press and hold it
 3. Enter in damping mode, pressing L1+A
 4. Enter in ready mode, pressing L1+UP
+5. Pull the robot down with its feet on the floor
+6. Enter in motion mode, pressing R2+X
 
 ## Wheelchair push demo
 To run the demo, please go in src/h1_2_demo and refer to that readme

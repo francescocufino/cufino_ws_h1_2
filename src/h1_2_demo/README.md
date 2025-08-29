@@ -13,9 +13,12 @@ and write `shake` for shake hand, `wave` for waving, `fist_bump` for fist bump f
 ### Execution using docker
 If you are using docker and you built the image from [README.md](https://github.com/francescocufino/unitree_h1_2/README.md), supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
 
+0. Open multiple terminal with `tmux`, split with `Ctrl+B` then `%`, and to change teminal, Ctrl+B, then arrows
+
 1. From inside the high level robot computer (see previous readme for connection with robot), run the container, navigate in the build folder you created when building, and run the hands drivers. The password for sudo is 'user'.
 ```sh
 docker start unitree_sdk2_container_2
+docker exec -it unitree_sdk2_container_2 bash
 cd ~/cufino_ws_h1_2/src
 sudo ./run_drivers.sh
 ```
