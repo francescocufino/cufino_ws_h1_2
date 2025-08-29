@@ -15,9 +15,13 @@ Hand_motion::Hand_motion(){
 
 void Hand_motion::move_hands(std::array<float, HANDS_JOINTS_DIM>& angles){
     for(size_t i(0); i<HANDS_JOINTS_DIM; i++){
-        cmd.cmds()[i].q() = angles.at(i);
+        if(i < L_HAND_JOINTS_DIM)
+            cmd_l.angle_set()[i] = angles.at(i);
+        else
+            cmd_r.angle_set()[i - L_HAND_JOINTS_DIM] = angles.at(i);
     }
-    handcmd->Write(cmd);
+    handcmd_l->Write(cmd_l);
+    handcmd_r->Write(cmd_r);
     usleep(1000000);
 
 }
@@ -26,7 +30,7 @@ std::array<float, R_HAND_JOINTS_DIM> Hand_motion::getRightQ(){
     std::lock_guard<std::mutex> lock(mtx);
     std::array<float, R_HAND_JOINTS_DIM> q;
     for(size_t i(0); i<R_HAND_JOINTS_DIM; i++){
-        q.at(i) = state.states()[i].q();
+        q.at(i) = state_r.angle_act()[i] ;
     }
     return q;
 }
@@ -35,7 +39,7 @@ std::array<float, L_HAND_JOINTS_DIM> Hand_motion::getLeftQ(){
     std::lock_guard<std::mutex> lock(mtx);
     std::array<float, L_HAND_JOINTS_DIM> q;
     for(size_t i(0); i<L_HAND_JOINTS_DIM; i++){
-        q.at(i) = state.states()[i+R_HAND_JOINTS_DIM].q();
+        q.at(i) = state_l.angle_act()[i] ;
     }
     return q;
 }
@@ -53,17 +57,36 @@ std::array<float, HANDS_JOINTS_DIM> Hand_motion::get_angles(){
 
 
 void Hand_motion::InitDDS_(){
-    handcmd = std::make_shared<unitree::robot::ChannelPublisher<unitree_go::msg::dds_::MotorCmds_>>(
-        "rt/inspire/cmd");
-    handcmd->InitChannel();
-    cmd.cmds().resize(HANDS_JOINTS_DIM);
-    handstate = std::make_shared<unitree::robot::ChannelSubscriber<unitree_go::msg::dds_::MotorStates_>>(
-        "rt/inspire/state");
-    handstate->InitChannel([this](const void *message){
-        std::lock_guard<std::mutex> lock(mtx);
-        state = *(unitree_go::msg::dds_::MotorStates_*)message;
+    handcmd_l = std::make_shared<unitree::robot::ChannelPublisher<inspire::inspire_hand_ctrl>>("rt/inspire_hand/ctrl/l");
+    handcmd_l->InitChannel();
+    handtouch_l = std::make_shared<unitree::robot::ChannelSubscriber<inspire::inspire_hand_touch>>("rt/inspire_hand/touch/l");
+    handstate_l = std::make_shared<unitree::robot::ChannelSubscriber<inspire::inspire_hand_state>>("rt/inspire_hand/state/l");
+    handcmd_l->InitChannel();
+    handstate_l->InitChannel([this](const void *message){
+        state_l = *(inspire::inspire_hand_state*)message; 
     });
-    state.states().resize(HANDS_JOINTS_DIM);
+    handtouch_l->InitChannel([this](const void *message)
+                           {
+    touch_l = *(inspire::inspire_hand_touch*)message; 
+    });
+    cmd_l.angle_set().resize(L_HAND_JOINTS_DIM);
+    cmd_l.mode(0b0001);
+
+
+    handcmd_r = std::make_shared<unitree::robot::ChannelPublisher<inspire::inspire_hand_ctrl>>("rt/inspire_hand/ctrl/r");
+    handcmd_r->InitChannel();
+    handtouch_r = std::make_shared<unitree::robot::ChannelSubscriber<inspire::inspire_hand_touch>>("rt/inspire_hand/touch/r");
+    handstate_r = std::make_shared<unitree::robot::ChannelSubscriber<inspire::inspire_hand_state>>("rt/inspire_hand/state/r");
+    handcmd_r->InitChannel();
+    handstate_r->InitChannel([this](const void *message)                            {
+    state_r = *(inspire::inspire_hand_state*)message; 
+    });
+    handtouch_r->InitChannel([this](const void *message)
+                           {
+    touch_r = *(inspire::inspire_hand_touch*)message; 
+    });
+    cmd_r.angle_set().resize(R_HAND_JOINTS_DIM);
+    cmd_r.mode(0b0001);
 }
 
 

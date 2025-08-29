@@ -18,7 +18,7 @@ void stop(int){
     h1_walk_ptr->stop_walk();
     h1_motion_ptr->stop_admittance();
     h1_motion_ptr->stop_arms(); //Eventually set actual joint pos
-    std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1);
+    std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1000);
     h1_hand_ptr->move_hands(hand_opened_pos);
     return;
 }
@@ -304,16 +304,20 @@ int main(int argc, char const *argv[]){
     std::array<float, UPPER_LIMB_JOINTS_DIM> arm_pos_2_pushing_test = {0.5, 0.240571, -0.109105, 0.394378, -0.0633168, 0.361801, -0.133496,
     0.5, -0.240571, 0.109105, 0.394378, 0.0633168, 0.361801, 0.133496};
     //0.f};
-    std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1);
-    std::array<float, HANDS_JOINTS_DIM> hand_closed_pos; hand_closed_pos.fill(0);
+    std::array<float, HANDS_JOINTS_DIM> hand_opened_pos; hand_opened_pos.fill(1000);
+    std::array<float, HANDS_JOINTS_DIM> hand_closed_pos_1 = {0, 0, 0, 0, 1000, 1000, 0, 0, 0, 0, 1000, 1000};
+    std::array<float, HANDS_JOINTS_DIM> hand_closed_pos_2 = {0, 0, 0, 0, 0, 1000, 0, 0, 0, 0, 0, 1000};
+    
 
-/*
+
     h1_hand_ptr->move_hands(hand_opened_pos);
     h1_motion_ptr->initialize_arms();
     h1_motion_ptr->move_arms_polynomial(arm_pos_pushing_test, 3);
     std::cout << "Press ENTER to grasp ...";
     std::cin.get();
-    h1_hand_ptr->move_hands(hand_closed_pos);
+    h1_hand_ptr->move_hands(hand_closed_pos_1);
+    h1_hand_ptr->move_hands(hand_closed_pos_2);
+
     std::cout << "Press ENTER to start arm admittance and pushing threads..."; 
     std::cin.get();
     std::cout << "Starting admittance and pushing threads. Press CTRL + C to stop the motion"; 
@@ -321,16 +325,8 @@ int main(int argc, char const *argv[]){
     boost::thread push_thread(push);
     admittance_thread.join(); // Wait for the thread to finish (or use detach if desired)
     push_thread.join(); 
-*/
 
-// TEST HANDS
-    h1_hand_ptr->move_hands(hand_opened_pos);
-    std::cout << "Press ENTER to grasp ...";
-    std::cin.get();
-    h1_hand_ptr->move_hands(hand_closed_pos);
-    std::cout << "Press ENTER to release grasp ...";
-    std::cin.get();
-    h1_hand_ptr->move_hands(hand_opened_pos);
+
 
 
 }

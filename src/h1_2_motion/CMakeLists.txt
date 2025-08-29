@@ -9,6 +9,7 @@ include_directories(
   /usr/local/include/ddscxx
   /usr/local/include/iceoryx/v2.0.2
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/hand_idl
 )
 
 link_libraries(unitree_sdk2 ddsc ddscxx rt pthread)
@@ -23,12 +24,16 @@ add_library(h1_2_motion STATIC
     src/hand_motion.cpp
     src/locomotion.cpp
     src/hand_service.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hand_idl/inspire_hand_ctrl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hand_idl/inspire_hand_state.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hand_idl/inspire_hand_touch.cpp
 )
 
 target_link_libraries(h1_2_motion Boost::thread Boost::system ${orocos_kdl_LIBRARIES} kdl_parser)
 
 target_include_directories(h1_2_motion PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hand_idl
     ${orocos_kdl_INCLUDE_DIRS}
     ${kdl_parser_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}

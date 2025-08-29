@@ -22,6 +22,10 @@
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <unitree/common/thread/thread.hpp>
 
+#include "inspire_hand_ctrl.hpp"
+#include "inspire_hand_state.hpp"
+#include "inspire_hand_touch.hpp"
+
 #include <eigen3/Eigen/Dense>
 #include <unordered_map>
 #include <array>
@@ -78,10 +82,20 @@ private:
 
     // DDS parameters
     std::mutex mtx;
-    unitree::robot::ChannelPublisherPtr<unitree_go::msg::dds_::MotorCmds_> handcmd;
-    unitree::robot::ChannelSubscriberPtr<unitree_go::msg::dds_::MotorStates_> handstate;
-    unitree_go::msg::dds_::MotorCmds_ cmd;
-    unitree_go::msg::dds_::MotorStates_ state;
+    unitree::robot::ChannelPublisherPtr<inspire::inspire_hand_ctrl> handcmd_r;
+    unitree::robot::ChannelSubscriberPtr<inspire::inspire_hand_state> handstate_r;
+    unitree::robot::ChannelSubscriberPtr<inspire::inspire_hand_touch> handtouch_r;
+    inspire::inspire_hand_ctrl cmd_r;
+    inspire::inspire_hand_state state_r;
+    inspire::inspire_hand_touch touch_r;
+
+    unitree::robot::ChannelPublisherPtr<inspire::inspire_hand_ctrl> handcmd_l;
+    unitree::robot::ChannelSubscriberPtr<inspire::inspire_hand_state> handstate_l;
+    unitree::robot::ChannelSubscriberPtr<inspire::inspire_hand_touch> handtouch_l;
+    inspire::inspire_hand_ctrl cmd_l;
+    inspire::inspire_hand_state state_l;
+    inspire::inspire_hand_touch touch_l;
+
 
 };
 

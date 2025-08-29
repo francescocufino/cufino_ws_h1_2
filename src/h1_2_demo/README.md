@@ -8,55 +8,29 @@ This repo contains an example demo based on h1_2_motion to perform whole body mo
 ```sh
 nano <YOUR_PATH_TO_WS>/cufino_ws_h1_2/h1_2_demo/config/routine.txt
 ```
-and write `shake` for shake hand, `wave` for waving, `fist_bump` for fist bump.
+and write `shake` for shake hand, `wave` for waving, `fist_bump` for fist bump for whole body motion.
 
 ### Execution using docker
 If you are using docker and you built the image from [README.md](https://github.com/francescocufino/unitree_h1_2/README.md), supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
 
 1. Run the container, navigate in the build folder you created when building, and run the hand service. The password for sudo is 'user'.
 ```sh
-cd <YOUR_PATH_TO_REPO>/unitree_h1_2
-source docker_run.sh
+docker start unitree_sdk2_container_2
+cd ~/cufino_ws_h1_2/src
+sudo ./run_drivers.sh
+```
+
+2. Attach another terminal to the container and run the program. For the pushing test, run
+```sh
+docker exec -it unitree_sdk2_container_2 bash
 cd ~/cufino_ws_h1_2/build
-sudo ./bin/hand_service -s /dev/ttyUSB0
+./bin/motion_test eth0
 ```
-If this command fails, substitute `ttyUSB1` or `ttyUSB2` in place of `ttyUSB0`, depending on where the hands have been mounted.
-> ⚠️ **Note:** It is fundamental to connect the hands BEFORE running the container, otherwise they are not seen from inside the container.
+Press ctrl+c to make the robot stop
+
+For wave demo, instead, run ``./bin/whole_body_motion eth0``
 
 
-2. Attach another terminal to the container and run the program
-```sh
-docker exec -it <CONTAINER_ID> bash
-cd ~/cufino_ws_h1_2/build
-./bin/whole_body_motion eth0
-```
-The <CONTAINER_ID> of the running container can be seen with `docker ps`.
-If the command doesn't work, in place of `eth0` you have to substitute your ethernet network interface. You can see it running
-```sh
-ifconfig
-```
-on your machine. This command lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
-
-## Execution without docker
-If you are not using docker, supposing that you have already built the code, and that you are connected to the robot, you can execute the following passages to run the program.
-1. Navigate in the build folder you created when building, and run the hand service.
-```sh
-cd <YOUR_PATH_TO_WS>/cufino_ws_h1_2/build
-sudo ./bin/hand_service -s /dev/ttyUSB0
-```
-If this command fails, substitute `ttyUSB1` or `ttyUSB2` in place of `ttyUSB0`, depending on where the hands have been mounted.
-
-
-2. Run the program
-```sh
-cd <YOUR_PATH_TO_REPO>/cufino_ws_h1_2/build
-./bin/whole_body_motion eth0
-```
-If the command doesn't work, in place of `eth0` you have to substitute your ethernet network interface. You can see it running
-```sh
-ifconfig
-```
-on your machine. This command lists all the network interfaces of your machine giving you the respective information. See the network interface corresponding to the subnet of the robot (broadcast 192.168.123.255).
 
 
    
